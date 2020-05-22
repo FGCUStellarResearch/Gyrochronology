@@ -5,7 +5,29 @@ import matplotlib.pyplot as plt
 import csv
 import pandas as pd
 import os
+from scipy.fft import fft
 
+# Period finder, soon to utilize four different algorithms find periods in a data set.
+def calcPeriods(time, flux, snr):
+    #plotLombScargle(time, detrended_flux)
+    DFT(time, flux, snr)
+
+# Plotting the Lomb-Scargle Algorithm.
+def plotLombScargle(time, flux):
+    # Plotting the raw time and detrended flux from the input file.
+    plt.plot(time, flux)
+    plt.show()
+
+    # Plotting the period with the Lomb-Scargle method. 
+    frequency,power = LombScargle(time, flux).autopower()
+    plt.plot(frequency, power)
+    plt.title("Lomb-Scargle Periods")
+    plt.xlabel("Frequency - Cycles/Day")
+    plt.ylabel("Power")
+    plt.show()
+
+def DFT(time, flux, snr):
+    N = len(flux)
 
 #Arrays to hold each column of data of the input file.
 time = []
@@ -33,12 +55,8 @@ with open("example_K2_input.csv") as input_file:
 time = [float(data) for data in time]
 detrended_flux = [float(data) for data in detrended_flux]
 raw_flux = [float(data) for data in raw_flux]
+noise = [float(data) for data in background]
+# Calculate the signal to noise ratio for data set. 
+snr = [signal/noise for signal,noise in zip(detrended_flux, noise)]
 
-# Plotting the raw time and detrended flux from the input file.
-plt.plot(time, detrended_flux)
-plt.show()
-
-# Plotting the period with the Lomb-Scargle method. 
-frequency,power = LombScargle(time, detrended_flux).autopower()
-plt.plot(frequency, power)
-plt.show()
+calcPeriods(time, detrended_flux, snr)
