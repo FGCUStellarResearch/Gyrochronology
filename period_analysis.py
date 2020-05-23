@@ -1,6 +1,8 @@
 import numpy as np
 import astropy as ap
 from astropy.timeseries import LombScargle
+from statsmodels.graphics.tsaplots import plot_pacf
+from statsmodels.graphics.tsaplots import plot_acf
 import matplotlib.pyplot as plt
 import csv
 import pandas as pd
@@ -10,7 +12,7 @@ from scipy.fft import fft
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, flux, snr):
     #plotLombScargle(time, detrended_flux)
-    DFT(time, flux, snr)
+    autoCorr(time, flux)
 
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
@@ -26,8 +28,14 @@ def plotLombScargle(time, flux):
     plt.ylabel("Power")
     plt.show()
 
-def DFT(time, flux, snr):
-    N = len(flux)
+def autoCorr(time, flux):
+    # Lag for this data is half the  number of days in K2 observations(40) multiplied by the amount of observations per day - 48 (30 min cadence)
+    lag = ((max(time) - min(time))/2) * 48
+    plot_acf(flux, lags = lag)
+    plt.title('Autocorrelation of K2 flux values')
+    plt.xlabel('Lag')
+    plt.ylabel('Autocorrelation')
+    plt.show()
 
 #Arrays to hold each column of data of the input file.
 time = []
