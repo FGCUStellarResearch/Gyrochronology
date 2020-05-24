@@ -7,12 +7,19 @@ import matplotlib.pyplot as plt
 import csv
 import pandas as pd
 import os
-from scipy.fft import fft
+from scipy.fftpack import fft
+import scaleogram as scg
+import pywt
+from scipy import signal
+from scipy import stats
+
+
 
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, flux, snr):
     #plotLombScargle(time, detrended_flux)
-    autoCorr(time, flux)
+    #autoCorr(time, flux)
+    wavelets(time,flux)
 
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
@@ -36,6 +43,50 @@ def autoCorr(time, flux):
     plt.xlabel('Lag')
     plt.ylabel('Autocorrelation')
     plt.show()
+
+def wavelets(time, flux):
+
+     
+    
+     wave , period = pwt.dwt(signal.detrend(flux)/np.mean(flux),stats.mode(np.diff(time)))
+     awave = abs(wave)
+
+     plt.plot(awave/max(awave), period)
+     
+     plt.xticks(visible = False)
+     plt.yticks(visible = False)
+     plt.xlabel('Time (d)')
+     plt.ylabel('Period (d)')
+     plt.title('Wavelet')
+     plt.colorbar()
+     plt.show()
+    # # colormap jet
+
+
+
+    # sst = pywt.data.nino()
+    # dt = time[1] - time[0]
+
+    # wavelet = 'cmor1.5-1.0'
+    # scales = np.arange(1,128)
+
+    # [cfs, frequencies] = pywt.cwt(sst, scales, wavelet, dt)
+    # power = (abs(cfs)) ** 2
+
+    # period = 1. / frequencies
+    # levels = [0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8]
+    # f, ax = plt.subplots(figsize = (15,10))
+    # ax.contourf(time, np.log2(period), np.log2(power), np.log2(levels), extended = 'both')
+
+    # ax.set_title('Wavelet Power Spectrum')
+    # ax.set_ylabel('Period (years)')
+    
+    # plt.colorbar()
+    # plt.show()
+
+  
+
+
 
 #Arrays to hold each column of data of the input file.
 time = []
