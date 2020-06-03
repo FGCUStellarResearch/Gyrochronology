@@ -46,45 +46,54 @@ def autoCorr(time, flux):
 
 def wavelets(time, flux):
 
-     
+    #  wavelet = 'cmor1.5-1.0'
     
-     wave , period = pwt.dwt(signal.detrend(flux)/np.mean(flux),stats.mode(np.diff(time)))
-     awave = abs(wave)
+    #  [wave , period] = pywt.cwt(signal.detrend(flux)/np.mean(flux),stats.mode(np.diff(time)))
+    #  awave = abs(wave)
 
-     plt.plot(awave/max(awave), period)
+    #  plt.plot(awave/max(awave), period)
      
-     plt.xticks(visible = False)
-     plt.yticks(visible = False)
-     plt.xlabel('Time (d)')
-     plt.ylabel('Period (d)')
-     plt.title('Wavelet')
-     plt.colorbar()
-     plt.show()
-    # # colormap jet
+    #  plt.xticks(visible = False)
+    #  plt.yticks(visible = False)
+    #  plt.xlabel('Time (d)')
+    #  plt.ylabel('Period (d)')
+    #  plt.title('Wavelet')
+    #  plt.colorbar()
+    #  plt.show()
+    # # # colormap jet
 
+    scg.set_default_wavelet('cmor2-3.0')
 
-
-    # sst = pywt.data.nino()
+    # time, flux = pywt.data.nino()
     # dt = time[1] - time[0]
 
-    # wavelet = 'cmor1.5-1.0'
-    # scales = np.arange(1,128)
+    # Taken from http://nicolasfauchereau.github.io/climatecode/posts/wavelet-analysis-in-python/
+    #wavelet = 'cmor2-1.5'
+    #scales = np.arange(1, 20)
+    scales = scg.periods2scales(0.05*np.arange(1, 1000))
+    ax = scg.cws(time, flux - np.mean(flux), scales = scales, figsize = (7,2))
 
-    # [cfs, frequencies] = pywt.cwt(sst, scales, wavelet, dt)
-    # power = (abs(cfs)) ** 2
+    # [cfs, frequencies] = pywt.cwt(flux, scales, wavelet, dt)
+    # power = (abs(cfs)) 
 
     # period = 1. / frequencies
     # levels = [0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8]
-    # f, ax = plt.subplots(figsize = (15,10))
-    # ax.contourf(time, np.log2(period), np.log2(power), np.log2(levels), extended = 'both')
+    # f, ax = plt.subplots(figsize=(15, 10))
+    # ax.contourf(time, np.log2(period), np.log2(power), np.log2(levels),
+    #             extend='both')
 
-    # ax.set_title('Wavelet Power Spectrum')
+    # ax.set_title('%s Wavelet Power Spectrum (%s)' % ('Nino1+2', wavelet))
     # ax.set_ylabel('Period (years)')
-    
-    # plt.colorbar()
-    # plt.show()
+    # Yticks = 2 ** np.arange(np.ceil(np.log2(period.min())),
+    #                         np.ceil(np.log2(period.max())))
+    # ax.set_yticks(np.log2(Yticks))
+    # ax.set_yticklabels(Yticks)
+    # ax.invert_yaxis()
+    # ylim = ax.get_ylim()
+    # ax.set_ylim(ylim[0], -1)
 
-  
+    plt.show()
+    
 
 
 
