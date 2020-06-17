@@ -12,6 +12,8 @@ import scaleogram as scg
 import pywt
 from scipy import signal
 from scipy import stats
+from scipy import fftpack
+from nfft import nfft
 
 
 
@@ -19,16 +21,31 @@ from scipy import stats
 def calcPeriods(time, flux, snr):
     #plotLombScargle(time, detrended_flux)
     #autoCorr(time, flux)
-    wavelets(time,flux)
+    #wavelets(time,flux)
+    dft(time,flux)
 
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
     # Plotting the raw time and detrended flux from the input file.
-    plt.plot(time, flux)
-    plt.show()
+    # plt.plot(time, flux)
+    # plt.show()
 
     # Plotting the period with the Lomb-Scargle method. 
     frequency,power = LombScargle(time, flux).autopower()
+    # Truncate arrays to only view the first peak of the periodogram.
+    frequency = frequency[:int(len(frequency) * .0025)]
+    power = power[:int(len(power) * .0025)]
+
+    # Conservative estimate of noise based on plot.
+    noise = .02
+
+    peak_index = np.where(power == np.max(power))[0][0]
+    print((np.max(power) - noise))
+    print(np.interp((np.max(power) - noise), power, frequency))
+    noise_index = np.where(power == find_nearest(power, (np.max(power) - noise)))
+
+    
+
     plt.plot(frequency, power)
     plt.title("Lomb-Scargle Periods")
     plt.xlabel("Frequency - Cycles/Day")
@@ -38,17 +55,18 @@ def plotLombScargle(time, flux):
 def autoCorr(time, flux):
     # Lag for this data is half the  number of days in K2 observations(40) multiplied by the amount of observations per day - 48 (30 min cadence)
     lag = ((max(time) - min(time))/2) * 48
+    
     plot_acf(flux, lags = lag)
     plt.title('Autocorrelation of K2 flux values')
     plt.xlabel('Lag')
     plt.ylabel('Autocorrelation')
     plt.show()
 
-def wavelets(time, flux):
+#def wavelets(time, flux):
 
     #  wavelet = 'cmor1.5-1.0'
     
-    #  [wave , period] = pywt.cwt(signal.detrend(flux)/np.mean(flux),stats.mode(np.diff(time)))
+    #  wave , period = pywt.dwt(signal.detrend(flux)/np.mean(flux),stats.mode(np.diff(time)))
     #  awave = abs(wave)
 
     #  plt.plot(awave/max(awave), period)
@@ -62,7 +80,7 @@ def wavelets(time, flux):
     #  plt.show()
     # # # colormap jet
 
-    scg.set_default_wavelet('cmor2-3.0')
+    #scg.set_default_wavelet('cmor2-3.0')
 
     # time, flux = pywt.data.nino()
     # dt = time[1] - time[0]
@@ -70,8 +88,8 @@ def wavelets(time, flux):
     # Taken from http://nicolasfauchereau.github.io/climatecode/posts/wavelet-analysis-in-python/
     #wavelet = 'cmor2-1.5'
     #scales = np.arange(1, 20)
-    scales = scg.periods2scales(0.05*np.arange(1, 1000))
-    ax = scg.cws(time, flux - np.mean(flux), scales = scales, figsize = (7,2))
+    # scales = scg.periods2scales(0.05*np.arange(1, 1000))
+    # ax = scg.cws(time, flux - np.mean(flux), scales = scales, figsize = (7,2))
 
     # [cfs, frequencies] = pywt.cwt(flux, scales, wavelet, dt)
     # power = (abs(cfs)) 
@@ -92,11 +110,33 @@ def wavelets(time, flux):
     # ylim = ax.get_ylim()
     # ax.set_ylim(ylim[0], -1)
 
+def dft(time, flux):
+    # fhat = fftpack.fft(flux)
+    # N = len(fhat)
+    # '''
+    # plt.plot([*range(0,N, 1)],fhat)
+    # plt.title('Fast Fourier Transform')
+    # plt.xlabel('Frequency')
+    # plt.ylabel('Density')
+    # plt.show()
+    # '''
+
+    NFFT = 1024
+    f = fftpack.fft(time, NFFT)
+    nVals = np.arange(start = 0, stop = NFFT)
+    plt.plot(nVals, f)
     plt.show()
+   
+
+
     
+   
 
-
-
+# Function found online. Used to find uncertainty.
+def find_nearest(array, value):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return array[idx]
 #Arrays to hold each column of data of the input file.
 time = []
 raw_flux = []
@@ -124,7 +164,5 @@ time = [float(data) for data in time]
 detrended_flux = [float(data) for data in detrended_flux]
 raw_flux = [float(data) for data in raw_flux]
 noise = [float(data) for data in background]
-# Calculate the signal to noise ratio for data set. 
-snr = [signal/noise for signal,noise in zip(detrended_flux, noise)]
 
-calcPeriods(time, detrended_flux, snr)
+calcPeriods(time, detrended_flux, noise)
