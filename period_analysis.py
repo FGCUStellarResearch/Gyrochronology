@@ -14,6 +14,7 @@ from scipy import signal
 from scipy import stats
 from scipy import fftpack
 from nfft import nfft
+import scipy.interpolate
 
 
 
@@ -37,20 +38,44 @@ def plotLombScargle(time, flux):
     power = power[:int(len(power) * .0025)]
 
     # Conservative estimate of noise based on plot.
-    noise = .02
+    noise = np.std(np.diff(power))
 
+    # Index with max power.
     peak_index = np.where(power == np.max(power))[0][0]
-    print((np.max(power) - noise))
-    print(np.interp((np.max(power) - noise), power, frequency))
-    noise_index = np.where(power == find_nearest(power, (np.max(power) - noise)))
 
+    # Create new frequency list with interpolated power values to find the first value more than one noise level below.
+    min_freq = .5 * frequency[peak_index]
+    max_freq = 2 * frequency[peak_index]
+    freq_step = (max_freq - min_freq)/100
+    new_freq = np.arange(min_freq, max_freq, freq_step)
+
+    # Create object to interpolate power values from created frequency values.
+    pchip_obj = scipy.interpolate.PchipInterpolator(frequency, power)
+    new_power = pchip_obj(new_freq)
+
+    # Index of the maximum power value inside new_power
+    new_peak = np.where(new_power == np.max(new_power))[0][0]
+    
+    # Split frequencies into upper and lower ranges to identify different errors when moving to a higher frequency and a lower frequency. 
+    upper_pow = new_power[new_peak:]
+    upper_freq = new_freq[new_peak:]
+    lower_pow = new_power[:new_peak]
+    lower_freq = new_freq[:new_peak]
+
+    # Index of first value which is more than one noise level below the maximum.
+    upper_err_idx = np.where(upper_pow == find_nearest(upper_pow, power[peak_index] - noise))[0][0]
+    print(upper_freq[upper_err_idx])
+    lower_err_idx = np.where(lower_pow == find_nearest(lower_pow, power[peak_index] - noise))[0][0]
+    print(lower_freq[lower_err_idx])
+    print(new_freq[new_peak])
     
 
-    plt.plot(frequency, power)
+    plt.plot(new_freq, new_power)
     plt.title("Lomb-Scargle Periods")
     plt.xlabel("Frequency - Cycles/Day")
     plt.ylabel("Power")
     plt.show()
+
 
 def autoCorr(time, flux):
     # Lag for this data is half the  number of days in K2 observations(40) multiplied by the amount of observations per day - 48 (30 min cadence)
