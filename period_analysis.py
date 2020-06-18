@@ -15,13 +15,15 @@ from scipy import stats
 from scipy import fftpack
 from nfft import nfft
 import scipy.interpolate
+from scipy.signal import find_peaks
+from astropy.convolution import convolve, Box1DKernel
 
 
 
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, flux, snr):
-    plotLombScargle(time, detrended_flux)
-    #autoCorr(time, flux)
+    #plotLombScargle(time, detrended_flux)
+    autoCorr(time, flux)
     #wavelets(time,flux)
     #dft(time,flux)
 
@@ -76,63 +78,96 @@ def plotLombScargle(time, flux):
 def autoCorr(time, flux):
     # Lag for this data is half the  number of days in K2 observations(40) multiplied by the amount of observations per day - 48 (30 min cadence)
     lag = ((max(time) - min(time))/2) * 48
+
+    #noisy_signal = np.std(np.diff(lag))
+
     
-    plot_acf(flux, lags = lag)
+    noisy_signal = np.array(flux)
+
+    smooth_signal = convolve(noisy_signal, Box1DKernel(31))
+    # #scipy.signal.find_peaks(x, height = None, threshold = None, distance = None, prominence = None, width = None, wlen= None, rel_height = 0.5, plateau_size = None)
+
+    locs, _ = scipy.signal.find_peaks(smooth_signal, distance = 100)
+    pks = smooth_signal[locs]
+
+    #plot_acf(flux, lags = lag)
+    #plot_acf(smooth_signal, lags = lag)
+    
+    plot_acf(pks)
     plt.title('Autocorrelation of K2 flux values')
     plt.xlabel('Lag')
     plt.ylabel('Autocorrelation')
     plt.show()
 
-def wavelets(time, flux):
+#def wavelets(time, flux):
 
-     
+    #  wavelet = 'cmor1.5-1.0'
     
-     wave , period = pywt.dwt(signal.detrend(flux)/np.mean(flux),stats.mode(np.diff(time)))
-     awave = abs(wave)
+    #  wave , period = pywt.dwt(signal.detrend(flux)/np.mean(flux),stats.mode(np.diff(time)))
+    #  awave = abs(wave)
 
-     plt.plot(awave/max(awave), period)
+    #  plt.plot(awave/max(awave), period)
      
-     plt.xticks(visible = False)
-     plt.yticks(visible = False)
-     plt.xlabel('Time (d)')
-     plt.ylabel('Period (d)')
-     plt.title('Wavelet')
-     plt.colorbar()
-     plt.show()
-    # # colormap jet
+    #  plt.xticks(visible = False)
+    #  plt.yticks(visible = False)
+    #  plt.xlabel('Time (d)')
+    #  plt.ylabel('Period (d)')
+    #  plt.title('Wavelet')
+    #  plt.colorbar()
+    #  plt.show()
+    # # # colormap jet
 
+    #scg.set_default_wavelet('cmor2-3.0')
 
-
-    # sst = pywt.data.nino()
+    # time, flux = pywt.data.nino()
     # dt = time[1] - time[0]
 
-    # wavelet = 'cmor1.5-1.0'
-    # scales = np.arange(1,128)
+    # Taken from http://nicolasfauchereau.github.io/climatecode/posts/wavelet-analysis-in-python/
+    #wavelet = 'cmor2-1.5'
+    #scales = np.arange(1, 20)
+    # scales = scg.periods2scales(0.05*np.arange(1, 1000))
+    # ax = scg.cws(time, flux - np.mean(flux), scales = scales, figsize = (7,2))
 
-    # [cfs, frequencies] = pywt.cwt(sst, scales, wavelet, dt)
-    # power = (abs(cfs)) ** 2
+    # [cfs, frequencies] = pywt.cwt(flux, scales, wavelet, dt)
+    # power = (abs(cfs)) 
 
     # period = 1. / frequencies
     # levels = [0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8]
-    # f, ax = plt.subplots(figsize = (15,10))
-    # ax.contourf(time, np.log2(period), np.log2(power), np.log2(levels), extended = 'both')
+    # f, ax = plt.subplots(figsize=(15, 10))
+    # ax.contourf(time, np.log2(period), np.log2(power), np.log2(levels),
+    #             extend='both')
 
-    # ax.set_title('Wavelet Power Spectrum')
+    # ax.set_title('%s Wavelet Power Spectrum (%s)' % ('Nino1+2', wavelet))
     # ax.set_ylabel('Period (years)')
-    
-    # plt.colorbar()
-    # plt.show()
+    # Yticks = 2 ** np.arange(np.ceil(np.log2(period.min())),
+    #                         np.ceil(np.log2(period.max())))
+    # ax.set_yticks(np.log2(Yticks))
+    # ax.set_yticklabels(Yticks)
+    # ax.invert_yaxis()
+    # ylim = ax.get_ylim()
+    # ax.set_ylim(ylim[0], -1)
 
 def dft(time, flux):
-    fhat = fftpack.fft(flux)
-    N = len(fhat)
-    '''
-    plt.plot([*range(0,N, 1)],fhat)
-    plt.title('Fast Fourier Transform')
-    plt.xlabel('Frequency')
-    plt.ylabel('Density')
+    # fhat = fftpack.fft(flux)
+    # N = len(fhat)
+    # '''
+    # plt.plot([*range(0,N, 1)],fhat)
+    # plt.title('Fast Fourier Transform')
+    # plt.xlabel('Frequency')
+    # plt.ylabel('Density')
+    # plt.show()
+    # '''
+
+    NFFT = 1024
+    f = fftpack.fft(time, NFFT)
+    nVals = np.arange(start = 0, stop = NFFT)
+    plt.plot(nVals, f)
     plt.show()
-    '''
+   
+
+
+    
+   
 
 # Function found online. Used to find uncertainty.
 def find_nearest(array, value):
