@@ -15,15 +15,17 @@ from scipy import stats
 from scipy import fftpack
 from nfft import nfft
 import scipy.interpolate
+from scipy.signal import find_peaks
+from astropy.convolution import convolve, Box1DKernel
 
 
 
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, flux, snr):
     #plotLombScargle(time, detrended_flux)
-    #autoCorr(time, flux)
+    autoCorr(time, flux)
     #wavelets(time,flux)
-    dft(time,flux)
+    #dft(time,flux)
 
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
@@ -80,8 +82,22 @@ def plotLombScargle(time, flux):
 def autoCorr(time, flux):
     # Lag for this data is half the  number of days in K2 observations(40) multiplied by the amount of observations per day - 48 (30 min cadence)
     lag = ((max(time) - min(time))/2) * 48
+
+    #noisy_signal = np.std(np.diff(lag))
+
     
-    plot_acf(flux, lags = lag)
+    noisy_signal = np.array(flux)
+
+    smooth_signal = convolve(noisy_signal, Box1DKernel(31))
+    # #scipy.signal.find_peaks(x, height = None, threshold = None, distance = None, prominence = None, width = None, wlen= None, rel_height = 0.5, plateau_size = None)
+
+    locs, _ = scipy.signal.find_peaks(smooth_signal, distance = 100)
+    pks = smooth_signal[locs]
+
+    #plot_acf(flux, lags = lag)
+    #plot_acf(smooth_signal, lags = lag)
+    
+    plot_acf(pks)
     plt.title('Autocorrelation of K2 flux values')
     plt.xlabel('Lag')
     plt.ylabel('Autocorrelation')
