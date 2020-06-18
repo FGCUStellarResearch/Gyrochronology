@@ -33,12 +33,14 @@ def plotLombScargle(time, flux):
 
     # Plotting the period with the Lomb-Scargle method. 
     frequency,power = LombScargle(time, flux).autopower()
+
+    # Estimate of noise based on the std of power values.
+    noise = np.std(np.diff(power))
+    print(noise)
+
     # Truncate arrays to only view the first peak of the periodogram.
     frequency = frequency[:int(len(frequency) * .0025)]
     power = power[:int(len(power) * .0025)]
-
-    # Conservative estimate of noise based on plot.
-    noise = np.std(np.diff(power))
 
     # Index with max power.
     peak_index = np.where(power == np.max(power))[0][0]
@@ -62,12 +64,6 @@ def plotLombScargle(time, flux):
     lower_pow = new_power[:new_peak]
     lower_freq = new_freq[:new_peak]
 
-    # Index of first value which is more than one noise level below the maximum.
-    upper_err_idx = np.where(upper_pow == find_nearest(upper_pow, power[peak_index] - noise))[0][0]
-    print(upper_freq[upper_err_idx])
-    lower_err_idx = np.where(lower_pow == find_nearest(lower_pow, power[peak_index] - noise))[0][0]
-    print(lower_freq[lower_err_idx])
-    print(new_freq[new_peak])
     
 
     plt.plot(new_freq, new_power)
