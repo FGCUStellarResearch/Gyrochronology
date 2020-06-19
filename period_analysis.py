@@ -22,8 +22,8 @@ from astropy.convolution import convolve, Box1DKernel
 
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, flux, snr):
-    #plotLombScargle(time, detrended_flux)
-    autoCorr(time, flux)
+    plotLombScargle(time, detrended_flux)
+    #autoCorr(time, flux)
     #wavelets(time,flux)
     #dft(time,flux)
 
@@ -32,6 +32,9 @@ def plotLombScargle(time, flux):
     # Plotting the raw time and detrended flux from the input file.
     # plt.plot(time, flux)
     # plt.show()
+
+
+    tot_time = np.max(time) - np.min(time)
 
     # Plotting the period with the Lomb-Scargle method. 
     frequency,power = LombScargle(time, flux).autopower()
@@ -66,7 +69,21 @@ def plotLombScargle(time, flux):
     lower_pow = new_power[:new_peak]
     lower_freq = new_freq[:new_peak]
 
-    
+    # Index of frequency values lower than the difference of peak - noise. 
+    f_max = new_peak + np.argmax(upper_pow < power[peak_index] - noise)
+    f_min = np.max(np.where(lower_pow < power[new_peak]-noise))
+    print(f_max)
+    print(f_min)
+    max_freq = new_freq[new_peak]
+
+    min_period = 1/new_freq[f_max]
+    max_period = 1/new_freq[f_max]
+    upp_err = max_period - 1/max_freq
+    low_err = (1/max_freq) - min_period
+    ls_upp_err = np.fmax(1/tot_time, upp_err)
+    ls_low_err = np.fmax(1/tot_time, low_err)
+
+    print('period =', 1/max_freq, "+", ls_upp_err, "-", ls_low_err)
 
     plt.plot(new_freq, new_power)
     plt.title("Lomb-Scargle Periods")
