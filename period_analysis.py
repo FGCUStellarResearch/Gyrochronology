@@ -22,57 +22,29 @@ from astropy.convolution import convolve, Box1DKernel
 
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, flux, snr):
-    #plotLombScargle(time, detrended_flux)
-    autoCorr(time, flux)
+    plotLombScargle(time, detrended_flux)
+    #autoCorr(time, flux)
     #wavelets(time,flux)
     #dft(time,flux)
 
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
-    # Plotting the raw time and detrended flux from the input file.
-    # plt.plot(time, flux)
-    # plt.show()
+
+    tot_time = np.max(time) - np.min(time)
 
     # Plotting the period with the Lomb-Scargle method. 
     frequency,power = LombScargle(time, flux).autopower()
+
+    # Estimate of noise based on the std of power values.
+    noise = np.std(np.diff(power))
+
     # Truncate arrays to only view the first peak of the periodogram.
     frequency = frequency[:int(len(frequency) * .0025)]
     power = power[:int(len(power) * .0025)]
 
-    # Conservative estimate of noise based on plot.
-    noise = np.std(np.diff(power))
+    find_uncertainty(frequency, power, tot_time, noise)
 
-    # Index with max power.
-    peak_index = np.where(power == np.max(power))[0][0]
-
-    # Create new frequency list with interpolated power values to find the first value more than one noise level below.
-    min_freq = .5 * frequency[peak_index]
-    max_freq = 2 * frequency[peak_index]
-    freq_step = (max_freq - min_freq)/100
-    new_freq = np.arange(min_freq, max_freq, freq_step)
-
-    # Create object to interpolate power values from created frequency values.
-    pchip_obj = scipy.interpolate.PchipInterpolator(frequency, power)
-    new_power = pchip_obj(new_freq)
-
-    # Index of the maximum power value inside new_power
-    new_peak = np.where(new_power == np.max(new_power))[0][0]
-    
-    # Split frequencies into upper and lower ranges to identify different errors when moving to a higher frequency and a lower frequency. 
-    upper_pow = new_power[new_peak:]
-    upper_freq = new_freq[new_peak:]
-    lower_pow = new_power[:new_peak]
-    lower_freq = new_freq[:new_peak]
-
-    # Index of first value which is more than one noise level below the maximum.
-    upper_err_idx = np.where(upper_pow == find_nearest(upper_pow, power[peak_index] - noise))[0][0]
-    print(upper_freq[upper_err_idx])
-    lower_err_idx = np.where(lower_pow == find_nearest(lower_pow, power[peak_index] - noise))[0][0]
-    print(lower_freq[lower_err_idx])
-    print(new_freq[new_peak])
-    
-
-    plt.plot(new_freq, new_power)
+    plt.plot(frequency, power)
     plt.title("Lomb-Scargle Periods")
     plt.xlabel("Frequency - Cycles/Day")
     plt.ylabel("Power")
@@ -168,16 +140,41 @@ def dft(time, flux):
     plt.plot(nVals, f)
     plt.show()
    
+def find_uncertainty(frequency, power, tot_time, noise):
 
+    # Index with max power.
+    peak_index = np.where(power == np.max(power))[0][0]
+    max_freq = frequency[peak_index]
+    # Create new frequency list with interpolated power values to find the first value more than one noise level below.
+    freq_low = .5 * max_freq
+    freq_high = 2 * max_freq
+    freq_step = (freq_high - freq_low)/100
+    new_freq = np.arange(freq_low, freq_high, freq_step)
 
+    # Create object to interpolate power values from created frequency values.
+    pchip_obj = scipy.interpolate.PchipInterpolator(frequency, power)
+    new_power = pchip_obj(new_freq)
+
+    # Index of the maximum power value inside new_power
+    new_peak = np.where(new_power == np.max(new_power))[0][0]
     
-   
+    # Split frequencies into upper and lower ranges to identify higher and lower uncertainties.
+    upper_pow = new_power[new_peak:]
+    lower_pow = new_power[1:new_peak]
 
-# Function found online. Used to find uncertainty.
-def find_nearest(array, value):
-    array = np.asarray(array)
-    idx = (np.abs(array - value)).argmin()
-    return array[idx]
+    # Index of frequency values lower than the difference of peak - noise. 
+    f_max = new_peak + np.argmax(upper_pow < power[peak_index] - noise)
+    f_min = np.max(np.where(lower_pow < power[peak_index]-noise))
+
+    min_period = 1/new_freq[f_max]
+    max_period = 1/new_freq[f_min]
+    upp_err = max_period - 1/max_freq
+    low_err = (1/max_freq) - min_period
+    ls_upp_err = np.fmax(1/tot_time, upp_err)
+    ls_low_err = np.fmax(1/tot_time, low_err)
+
+    print('period =', 1/max_freq, "+", ls_upp_err, "-", ls_low_err)   
+
 #Arrays to hold each column of data of the input file.
 time = []
 raw_flux = []
