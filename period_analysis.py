@@ -95,9 +95,9 @@ def autoCorr(time, flux):
     pks = smooth_signal[locs]
 
     #plot_acf(flux, lags = lag)
-    #plot_acf(smooth_signal, lags = lag)
+    plt.plot(smooth_signal)
     
-    plot_acf(pks)
+    #plot_acf(pks)
     plt.title('Autocorrelation of K2 flux values')
     plt.xlabel('Lag')
     plt.ylabel('Autocorrelation')
