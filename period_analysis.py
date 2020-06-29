@@ -17,15 +17,17 @@ from nfft import nfft
 import scipy.interpolate
 from scipy.signal import find_peaks
 from astropy.convolution import convolve, Box1DKernel
+#from scipy.linalg import dft
+#from udf import *
 
 
 
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, flux, snr):
     #plotLombScargle(time, detrended_flux)
-    autoCorr(time, detrended_flux)
+    #autoCorr(time, detrended_flux)
     #wavelets(time,flux)
-    #dft(time,flux)
+    dft(time,flux)
 
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
@@ -178,23 +180,30 @@ def autoCorr(time, flux):
     # ylim = ax.get_ylim()
     # ax.set_ylim(ylim[0], -1)
 
-def dft(time, flux):
-    # fhat = fftpack.fft(flux)
-    # N = len(fhat)
-    # '''
-    # plt.plot([*range(0,N, 1)],fhat)
-    # plt.title('Fast Fourier Transform')
-    # plt.xlabel('Frequency')
-    # plt.ylabel('Density')
-    # plt.show()
-    # '''
+# def dft(time, flux):
 
-    NFFT = 1024
-    f = fftpack.fft(time, NFFT)
-    nVals = np.arange(start = 0, stop = NFFT)
-    plt.plot(nVals, f)
-    plt.show()
+#     time = np.arange(0,100,0.1)
+#     flux = np.sin(2*time)
+
+#     delf = 1/(max(time)-min(time))
+#     fout = np.arange(0,500*delf,delf)
+#     XX = udft(time,flux,fout)
+
+#     delf = 1/(max(time)-min(time))
+#     fout = np.arange(0,500*delf,0.1*delf)
+#     XX = udft(time,flux,fout)
+#     amp = (2/len(time))*abs(XX)
+
+#     max_freq = fout[np.argmax(amp[fout<1])]
+#     print(max_freq)
+#     print(1/max_freq)
+    
+#     plt.plot(fout,amp)
+#     plt.xlim(0,0.5)
+#     plt.ylim(0,0.003)
+#     plt.show()
    
+
 def find_uncertainty(frequency, power, tot_time, noise):
 
     # Index with max power.
