@@ -25,9 +25,9 @@ from astropy.convolution import convolve, Box1DKernel
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, flux, snr):
     #plotLombScargle(time, detrended_flux)
-    #autoCorr(time, detrended_flux)
+    autoCorr(time, detrended_flux)
     #wavelets(time,flux)
-    dft(time,flux)
+    #dft(time,flux)
 
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
@@ -86,50 +86,51 @@ def autoCorr(time, flux):
     print(acf_noise)
 
 
-    #total_time = np.max(time) - np.min(time)
-    #find_uncertainty_corr(lags, acf, total_time, acf_noise)
+    total_time = np.max(time) - np.min(time)
+    find_uncertainty_corr(lags, acf, total_time, acf_noise)
 
+    
     plt.plot(lags , acf)
     plt.xlim(period - 0.2 , period + 0.2)
     plt.ylim(0.815,0.822)
     plt.show()
     
-# def find_uncertainty_corr(lags, acf, total_time, acf_noise):
+def find_uncertainty_corr(lags, acf, total_time, acf_noise):
 
-#     #  
-#     peak_index = np.where(acf == np.max(acf))[0][0]
-#     max_lags = lags[peak_index]
+    #  
+    peak_index = np.where(acf == np.max(acf))[0][0]
+    max_lags = lags[peak_index]
    
-#     # 
+    # 
    
-#     lags_low = .5 * max_lags
-#     lags_high = 2 * max_lags
-#     lags_step = (lags_high - lags_low)/100
-#     new_lags = np.arange(lags_low, lags_high, lags_step)
+    lags_low = .5 * max_lags
+    lags_high = 2 * max_lags
+    lags_step = (lags_high - lags_low)/100
+    new_lags = np.arange(lags_low, lags_high, lags_step)
 
-#     # 
-#     pchip_obj = scipy.interpolate.PchipInterpolator(lags, acf)
-#     new_acf = pchip_obj(new_lags)
+    # 
+    pchip_obj = scipy.interpolate.PchipInterpolator(lags, acf)
+    new_acf = pchip_obj(new_lags)
 
-#     # 
-#     new_peak = np.where(new_acf == np.max(new_acf))[0][0]
+    # 
+    new_peak = np.where(new_acf == np.max(new_acf))[0][0]
     
-#     # 
-#     upper_acf = new_acf[new_peak:]
-#     lower_acf = new_acf[1:new_peak]
+    # 
+    upper_acf = new_acf[new_peak:]
+    lower_acf = new_acf[1:new_peak]
 
-#     #  
-#     f_max = new_peak + np.argmax(upper_acf < acf[peak_index] - acf_noise)
-#     f_min = np.max(np.where(lower_acf < acf[peak_index] - acf_noise))
+    #  
+    f_max = new_peak + np.argmax(upper_acf < acf[peak_index] - acf_noise)
+    f_min = np.where(lower_acf < acf[peak_index] - acf_noise)
 
-#     min_period = 1/new_lags[f_max]
-#     max_period = 1/new_lags[f_min]
-#     upp_err = max_period - 1/max_lags
-#     low_err = (1/max_lags) - min_period
-#     ls_upp_err = np.fmax(1/total_time, upp_err)
-#     ls_low_err = np.fmax(1/total_time, low_err)
+    min_period = 1/new_lags[f_max]
+    max_period = 1/new_lags[f_min]
+    upp_err = max_period - 1/max_lags
+    low_err = (1/max_lags) - min_period
+    ls_upp_err = np.fmax(1/total_time, upp_err)
+    ls_low_err = np.fmax(1/total_time, low_err)
 
-#     print('period =', 1/max_lags, "+", ls_upp_err, "-", ls_low_err)   
+    print('period =', 1/max_lags, "+", ls_upp_err, "-", ls_low_err)   
     
 
 #def wavelets(time, flux):
