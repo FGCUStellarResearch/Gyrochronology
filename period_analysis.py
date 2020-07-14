@@ -102,68 +102,62 @@ def autoCorr(time, flux):
 
     a = plt.acorr(flux, maxlags = 2000)
 
+    # Split results of autocorrelation function into two values.
     lags = a[0]
     acf = a[1]
+    # Only look at positive values.
     acf = acf[lags > 0]
     lags = lags[lags > 0]
 
+    # Change lags to time units.
     del_t = np.median(np.diff(time))
     lags = lags * del_t
 
+    # Smooth acf curve. 
+    kernel_size = 31
+    smooth_acf = convolve(acf, Box1DKernel(kernel_size))
 
-    # kernel_size = 31
-    # smooth_acf = convolve(acf, Box1DKernel(kernel_size))
-
-    # pks, _ = scipy.signal.find_peaks(smooth_acf, distance = 30)
-    # pks
+    # Find positive peak locations
+    pks = scipy.signal.find_peaks(smooth_acf, distance = 30)
+    potential_periods = lags[pks]
     
-    # potential_periods = lags[pks]
-    
-    # potential_periods = potential_periods[acf[pks] > 0]
-    # period = potential_periods[potential_periods > kernel_size * del_t]
-    # period = period[0]
-    # print(period)
+    potential_periods = potential_periods[acf[pks] > 0]
+    period = potential_periods[potential_periods > kernel_size * del_t]
+    period = period[0]
 
+    # Noise level of acf plot.
     acf_noise = np.std(np.diff(acf))
-    # print(acf_noise)
-
 
     total_time = np.max(time) - np.min(time)
-    find_uncertainty_corr(lags, acf, total_time, acf_noise)
-
+    find_uncertainty_corr(lags, acf, total_time, acf_noise, period)
     
-    lags = lags[:int(len(lags) * .35)]
-    acf = acf[:int(len(acf) * .35)]
+    #lags = lags[:int(len(lags) * .35)]
+    #acf = acf[:int(len(acf) * .35)]
 
+    plt.plot(lags,acf)
+    plt.xlabel("Lags")
+    plt.ylabel("Acf")
+    plt.xlim(6, 12)
+    plt.show()
     
-    # plt.plot(lags , acf)
-    # plt.xlabel("Lags")
-    # plt.ylabel("Acf")
-    # plt.xlim(0, 40)
-    # plt.show()
-    
-def find_uncertainty_corr(lags, acf, total_time, acf_noise):
+def find_uncertainty_corr(lags, acf, total_time, acf_noise, real_peak):
 
-    #  
-    peak_index = np.where(acf < np.max(acf))[0][0]
+    # Find peak index, which is the second peak, the one *after* the first values that are smoothing the curve. 
+    peak_index = np.where(lags == real_peak)[0][0]
     max_lags = lags[peak_index]
     print("peak_index")
     print(peak_index)
    
-   
     # 
-   
     lags_low = .5 * max_lags
     lags_high = 2 * max_lags
     lags_step = (lags_high - lags_low)/100
-    new_lags = np.arange(lags_low, lags_high, lags_step)
-    
+    new_lags = np.arange(lags_low, lags_high, lags_step) 
 
     # 
     pchip_obj = scipy.interpolate.PchipInterpolator(lags, acf)
     new_acf = pchip_obj(new_lags)
     
-
     # 
     new_peak = np.where(new_acf < np.max(new_acf))[0][0]
     print("new_peak")
@@ -244,26 +238,26 @@ def find_uncertainty_corr(lags, acf, total_time, acf_noise):
 
 # def dft(time, flux):
 
-#     time = np.arange(0,100,0.1)
-#     flux = np.sin(2*time)
+    #     time = np.arange(0,100,0.1)
+    #     flux = np.sin(2*time)
 
-#     delf = 1/(max(time)-min(time))
-#     fout = np.arange(0,500*delf,delf)
-#     XX = udft(time,flux,fout)
+    #     delf = 1/(max(time)-min(time))
+    #     fout = np.arange(0,500*delf,delf)
+    #     XX = udft(time,flux,fout)
 
-#     delf = 1/(max(time)-min(time))
-#     fout = np.arange(0,500*delf,0.1*delf)
-#     XX = udft(time,flux,fout)
-#     amp = (2/len(time))*abs(XX)
+    #     delf = 1/(max(time)-min(time))
+    #     fout = np.arange(0,500*delf,0.1*delf)
+    #     XX = udft(time,flux,fout)
+    #     amp = (2/len(time))*abs(XX)
 
-#     max_freq = fout[np.argmax(amp[fout<1])]
-#     print(max_freq)
-#     print(1/max_freq)
-    
-#     plt.plot(fout,amp)
-#     plt.xlim(0,0.5)
-#     plt.ylim(0,0.003)
-#     plt.show()
+    #     max_freq = fout[np.argmax(amp[fout<1])]
+    #     print(max_freq)
+    #     print(1/max_freq)
+
+    #     plt.plot(fout,amp)
+    #     plt.xlim(0,0.5)
+    #     plt.ylim(0,0.003)
+    #     plt.show()
    
 
 
