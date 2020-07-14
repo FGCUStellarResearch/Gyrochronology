@@ -15,6 +15,7 @@ from scipy import stats
 from scipy import fftpack
 from nfft import nfft
 import scipy.interpolate
+import scipy.cluster
 from scipy.signal import find_peaks
 from astropy.convolution import convolve, Box1DKernel
 #from scipy.linalg import dft
@@ -111,29 +112,33 @@ def autoCorr(time, flux):
     lags = lags * del_t
 
 
-    # kernel_size = 31
-    # smooth_acf = convolve(acf, Box1DKernel(kernel_size))
+    kernel_size = 31
+    smooth_acf = convolve(acf, Box1DKernel(kernel_size))
 
-    # pks, _ = scipy.signal.find_peaks(smooth_acf, distance = 30)
-    # pks
+    pks, _ = scipy.signal.find_peaks(smooth_acf, distance = 30)
+    pks
     
-    # potential_periods = lags[pks]
+    potential_periods = lags[pks]
     
-    # potential_periods = potential_periods[acf[pks] > 0]
-    # period = potential_periods[potential_periods > kernel_size * del_t]
-    # period = period[0]
-    # print(period)
+    potential_periods = potential_periods[acf[pks] > 0]
+    period = potential_periods[potential_periods > kernel_size * del_t]
+    period = period[0]
+    print(period)
 
     acf_noise = np.std(np.diff(acf))
     # print(acf_noise)
 
 
     total_time = np.max(time) - np.min(time)
-    find_uncertainty_corr(lags, acf, total_time, acf_noise)
+    find_uncertainty_corr(potential_periods, total_time, acf_noise)
 
     
-    lags = lags[:int(len(lags) * .35)]
-    acf = acf[:int(len(acf) * .35)]
+    # lags = lags[:int(len(lags) * .35)]
+    # acf = acf[:int(len(acf) * .35)]
+
+    plt.plot(lags,acf)
+    plt.xlim(period-0.2,period+0.2)
+    plt.ylim(0.815,0.822)
 
     
     # plt.plot(lags , acf)
@@ -142,13 +147,14 @@ def autoCorr(time, flux):
     # plt.xlim(0, 40)
     # plt.show()
     
-def find_uncertainty_corr(lags, acf, total_time, acf_noise):
+def find_uncertainty_corr(potential_periods, total_time, acf_noise):
 
     #  
-    peak_index = np.where(acf < np.max(acf))[0][0]
-    max_lags = lags[peak_index]
+    peak_index = np.where(potential_periods == np.max(potential_periods))[0][0]
+    max_lags = potential_periods[peak_index]
     print("peak_index")
     print(peak_index)
+    print(max_lags)
    
    
     # 
@@ -160,7 +166,7 @@ def find_uncertainty_corr(lags, acf, total_time, acf_noise):
     
 
     # 
-    pchip_obj = scipy.interpolate.PchipInterpolator(lags, acf)
+    pchip_obj = scipy.interpolate.PchipInterpolator(acf_noise, potential_periods)
     new_acf = pchip_obj(new_lags)
     
 
@@ -176,10 +182,10 @@ def find_uncertainty_corr(lags, acf, total_time, acf_noise):
     # print(lower_acf)
 
     #  
-    f_max = new_peak + np.argmax(upper_acf < acf[peak_index] - acf_noise)
-    f_min = new_peak + np.where(lower_acf < acf[peak_index] - acf_noise)
+    f_max = new_peak + np.argmax(upper_acf < potential_periods[peak_index] - acf_noise)
+    f_min = np.where(np.max(lower_acf < potential_periods[peak_index] - acf_noise))
     print("ACF[peak_index]")
-    print(acf[peak_index])
+    print(potential_periods[peak_index])
     print(f_min)
 
     min_period = 1/new_lags[f_max]
