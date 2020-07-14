@@ -52,6 +52,47 @@ def plotLombScargle(time, flux):
     plt.ylabel("Power")
     plt.show()
 
+def find_uncertainty(frequency, power, tot_time, noise):
+
+    # Index with max power.
+    peak_index = np.where(power == np.max(power))[0][0]
+    max_freq = frequency[peak_index]
+    print(peak_index)
+
+    # Create new frequency list with interpolated power values to find the first value more than one noise level below.
+    freq_low = .5 * max_freq
+    freq_high = 2 * max_freq
+    freq_step = (freq_high - freq_low)/100
+    new_freq = np.arange(freq_low, freq_high, freq_step)
+
+    # Create object to interpolate power values from created frequency values.
+    pchip_obj = scipy.interpolate.PchipInterpolator(frequency, power)
+    new_power = pchip_obj(new_freq)
+
+    # Index of the maximum power value inside new_power
+    new_peak = np.where(new_power == np.max(new_power))[0][0]
+    
+    # Split frequencies into upper and lower ranges to identify higher and lower uncertainties.
+    upper_pow = new_power[new_peak:]
+    lower_pow = new_power[1:new_peak]
+
+    # Index of frequency values lower than the difference of peak - noise. 
+    f_max = new_peak + np.argmax(upper_pow < power[peak_index] - noise)
+    f_min = np.max(np.where(lower_pow < power[peak_index]-noise))
+    print(f_min)
+
+    min_period = 1/new_freq[f_max]
+    max_period = 1/new_freq[f_min]
+    upp_err = max_period - 1/max_freq
+    low_err = (1/max_freq) - min_period
+    ls_upp_err = np.fmax(1/tot_time, upp_err)
+    ls_low_err = np.fmax(1/tot_time, low_err)
+
+    print(max_period)
+
+    print('period =', 1/max_freq, "+", ls_upp_err, "-", ls_low_err)   
+
+
 
 def autoCorr(time, flux):
     # Lag for this data is half the  number of days in K2 observations(40) multiplied by the amount of observations per day - 48 (30 min cadence)
@@ -69,37 +110,46 @@ def autoCorr(time, flux):
     del_t = np.median(np.diff(time))
     lags = lags * del_t
 
-    kernel_size = 31
-    smooth_acf = convolve(acf, Box1DKernel(kernel_size))
 
-    pks, _ = scipy.signal.find_peaks(smooth_acf, distance = 30)
-    pks
+    # kernel_size = 31
+    # smooth_acf = convolve(acf, Box1DKernel(kernel_size))
+
+    # pks, _ = scipy.signal.find_peaks(smooth_acf, distance = 30)
+    # pks
     
-    potential_periods = lags[pks]
+    # potential_periods = lags[pks]
     
-    potential_periods = potential_periods[acf[pks] > 0]
-    period = potential_periods[potential_periods > kernel_size * del_t]
-    period = period[0]
-    print(period)
+    # potential_periods = potential_periods[acf[pks] > 0]
+    # period = potential_periods[potential_periods > kernel_size * del_t]
+    # period = period[0]
+    # print(period)
 
     acf_noise = np.std(np.diff(acf))
-    print(acf_noise)
+    # print(acf_noise)
 
 
     total_time = np.max(time) - np.min(time)
     find_uncertainty_corr(lags, acf, total_time, acf_noise)
 
     
-    plt.plot(lags , acf)
-    plt.xlim(period - 0.2 , period + 0.2)
-    plt.ylim(0.815,0.822)
-    plt.show()
+    lags = lags[:int(len(lags) * .35)]
+    acf = acf[:int(len(acf) * .35)]
+
+    
+    # plt.plot(lags , acf)
+    # plt.xlabel("Lags")
+    # plt.ylabel("Acf")
+    # plt.xlim(0, 40)
+    # plt.show()
     
 def find_uncertainty_corr(lags, acf, total_time, acf_noise):
 
     #  
-    peak_index = np.where(acf == np.max(acf))[0][0]
+    peak_index = np.where(acf < np.max(acf))[0][0]
     max_lags = lags[peak_index]
+    print("peak_index")
+    print(peak_index)
+   
    
     # 
    
@@ -107,21 +157,30 @@ def find_uncertainty_corr(lags, acf, total_time, acf_noise):
     lags_high = 2 * max_lags
     lags_step = (lags_high - lags_low)/100
     new_lags = np.arange(lags_low, lags_high, lags_step)
+    
 
     # 
     pchip_obj = scipy.interpolate.PchipInterpolator(lags, acf)
     new_acf = pchip_obj(new_lags)
+    
 
     # 
-    new_peak = np.where(new_acf == np.max(new_acf))[0][0]
+    new_peak = np.where(new_acf < np.max(new_acf))[0][0]
+    print("new_peak")
+    print(new_peak)
     
     # 
     upper_acf = new_acf[new_peak:]
-    lower_acf = new_acf[1:new_peak]
+    lower_acf = new_acf[new_peak: 1]
+    # print("lower_acf")
+    # print(lower_acf)
 
     #  
     f_max = new_peak + np.argmax(upper_acf < acf[peak_index] - acf_noise)
-    f_min = np.where(lower_acf < acf[peak_index] - acf_noise)
+    f_min = new_peak + np.where(lower_acf < acf[peak_index] - acf_noise)
+    print("ACF[peak_index]")
+    print(acf[peak_index])
+    print(f_min)
 
     min_period = 1/new_lags[f_max]
     max_period = 1/new_lags[f_min]
@@ -129,6 +188,8 @@ def find_uncertainty_corr(lags, acf, total_time, acf_noise):
     low_err = (1/max_lags) - min_period
     ls_upp_err = np.fmax(1/total_time, upp_err)
     ls_low_err = np.fmax(1/total_time, low_err)
+
+    print(1/max_lags)
 
     print('period =', 1/max_lags, "+", ls_upp_err, "-", ls_low_err)   
     
@@ -205,40 +266,6 @@ def find_uncertainty_corr(lags, acf, total_time, acf_noise):
 #     plt.show()
    
 
-def find_uncertainty(frequency, power, tot_time, noise):
-
-    # Index with max power.
-    peak_index = np.where(power == np.max(power))[0][0]
-    max_freq = frequency[peak_index]
-    # Create new frequency list with interpolated power values to find the first value more than one noise level below.
-    freq_low = .5 * max_freq
-    freq_high = 2 * max_freq
-    freq_step = (freq_high - freq_low)/100
-    new_freq = np.arange(freq_low, freq_high, freq_step)
-
-    # Create object to interpolate power values from created frequency values.
-    pchip_obj = scipy.interpolate.PchipInterpolator(frequency, power)
-    new_power = pchip_obj(new_freq)
-
-    # Index of the maximum power value inside new_power
-    new_peak = np.where(new_power == np.max(new_power))[0][0]
-    
-    # Split frequencies into upper and lower ranges to identify higher and lower uncertainties.
-    upper_pow = new_power[new_peak:]
-    lower_pow = new_power[1:new_peak]
-
-    # Index of frequency values lower than the difference of peak - noise. 
-    f_max = new_peak + np.argmax(upper_pow < power[peak_index] - noise)
-    f_min = np.max(np.where(lower_pow < power[peak_index]-noise))
-
-    min_period = 1/new_freq[f_max]
-    max_period = 1/new_freq[f_min]
-    upp_err = max_period - 1/max_freq
-    low_err = (1/max_freq) - min_period
-    ls_upp_err = np.fmax(1/tot_time, upp_err)
-    ls_low_err = np.fmax(1/tot_time, low_err)
-
-    print('period =', 1/max_freq, "+", ls_upp_err, "-", ls_low_err)   
 
 #Arrays to hold each column of data of the input file.
 time = []
