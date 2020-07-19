@@ -25,7 +25,7 @@ from astropy.convolution import convolve, Box1DKernel
 
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, flux, snr):
-    #plotLombScargle(time, detrended_flux)
+    plotLombScargle(time, detrended_flux)
     autoCorr(time, detrended_flux)
     #wavelets(time,flux)
     #dft(time,flux)
@@ -44,25 +44,26 @@ def plotLombScargle(time, flux):
     # Truncate arrays to only view the first peak of the periodogram.
     frequency = frequency[:int(len(frequency) * .0025)]
     power = power[:int(len(power) * .0025)]
+    period = np.max(power)
 
-    find_uncertainty(frequency, power, tot_time, noise)
+    # Values used when creating interpolated values in uncertainty function. 
+    interp_coeff = [0.5, 2]
+    peak_index = np.where(power == period)[0][0]
 
-    plt.plot(frequency, power)
-    plt.title("Lomb-Scargle Periods")
-    plt.xlabel("Frequency - Cycles/Day")
-    plt.ylabel("Power")
-    plt.show()
+    find_uncertainty(frequency, power, tot_time, noise, peak_index, interp_coeff)
 
-def find_uncertainty(frequency, power, tot_time, noise):
+    plot_graph(frequency, power, "Frequency - Cycles/Day", "Power", "Lomb-Scargle Periods")
+    
+# Function for finding uncertainty in either Lomb-Scargle or Autocorrelation functions.
+def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
 
-    # Index with max power.
-    peak_index = np.where(power == np.max(power))[0][0]
-    max_freq = frequency[peak_index]
-    print(peak_index)
+    # Finding the index with the most frequent period.
+    max_freq = frequency[period_idx]
+    print(period_idx)
 
     # Create new frequency list with interpolated power values to find the first value more than one noise level below.
-    freq_low = .5 * max_freq
-    freq_high = 2 * max_freq
+    freq_low = coeffs[0] * max_freq
+    freq_high = coeffs[1] * max_freq
     freq_step = (freq_high - freq_low)/100
     new_freq = np.arange(freq_low, freq_high, freq_step)
 
@@ -78,8 +79,8 @@ def find_uncertainty(frequency, power, tot_time, noise):
     lower_pow = new_power[1:new_peak]
 
     # Index of frequency values lower than the difference of peak - noise. 
-    f_max = new_peak + np.argmax(upper_pow < power[peak_index] - noise)
-    f_min = np.max(np.where(lower_pow < power[peak_index]-noise))
+    f_max = new_peak + np.argmax(upper_pow < power[period_idx] - noise)
+    f_min = np.max(np.where(lower_pow < power[period_idx]-noise))
     print(f_min)
 
     min_period = 1/new_freq[f_max]
@@ -89,12 +90,10 @@ def find_uncertainty(frequency, power, tot_time, noise):
     ls_upp_err = np.fmax(1/tot_time, upp_err)
     ls_low_err = np.fmax(1/tot_time, low_err)
 
-    print(max_period)
+    # Use max in print function to differentiate between autocorrelation lag value, or lombscargle freqency value.
+    print('period =', max(1/max_freq, max_freq), "+", ls_upp_err, "-", ls_low_err)   
 
-    print('period =', 1/max_freq, "+", ls_upp_err, "-", ls_low_err)   
-
-
-
+# Running autocorrelation on data set.
 def autoCorr(time, flux):
     # Lag for this data is half the  number of days in K2 observations(40) multiplied by the amount of observations per day - 48 (30 min cadence)
     #lag = ((max(time) - min(time))/2) * 48
@@ -121,11 +120,13 @@ def autoCorr(time, flux):
     kernel_size = 31
     smooth_acf = convolve(acf, Box1DKernel(kernel_size))
 
+    # Find peaks that are in the positive range.
     pks, _ = scipy.signal.find_peaks(smooth_acf, distance = 30)
     pks
     
     potential_periods = lags[pks]
     
+    # The first peak (after the smoothing window) will be our period for this data. 
     potential_periods = potential_periods[acf[pks] > 0]
     period = potential_periods[potential_periods > kernel_size * del_t]
     period = period[0]
@@ -134,65 +135,19 @@ def autoCorr(time, flux):
     acf_noise = np.std(np.diff(acf))
 
     total_time = np.max(time) - np.min(time)
-    find_uncertainty_corr(lags,acf, total_time, acf_noise, period)
+    # Values used when creating interpolated values in uncertainty function. 
+    interp_coeff = [0.65, 1.30]
+    peak_index = np.where(lags == period)[0][0]
 
-    
+
+    find_uncertainty(lags , acf, total_time, acf_noise, peak_index, interp_coeff)
 
     plt.plot(lags,acf)
-    plt.xlim(period-0.2,period+0.2)
+    plt.xlim(6, 12)
     plt.ylim(0.815,0.822)
 
-    plt.plot(lags,acf)
-    plt.xlabel("Lags")
-    plt.ylabel("Acf")
-    plt.xlim(6, 12)
-    plt.show()
-    
-    
-def find_uncertainty_corr(lags, acf, total_time, acf_noise, period):
-
-    # Find peak index, which is the second peak, the one *after* the first values that are smoothing the curve. 
-    peak_index = np.where(lags == period)[0][0]
-    max_lags = lags[peak_index]
-    
-   
-    # 
-    lags_low = .65 * max_lags
-    lags_high = 1.30 * max_lags
-    lags_step = (lags_high - lags_low)/100
-    new_lags = np.arange(lags_low, lags_high, lags_step) 
-   
-
-    # 
-    pchip_obj = scipy.interpolate.PchipInterpolator(lags, acf)
-    new_acf = pchip_obj(new_lags)
-    
-    # 
-    new_peak = np.where(new_lags > period)[0][0]
-    
-    
-    # 
-    upper_acf = new_acf[new_peak:]
-    lower_acf = new_acf[1 :new_peak]
-   
-
-    #  
-    f_max = np.where(np.max(upper_acf < acf[peak_index] - acf_noise))
-    f_min = np.max(np.where(lower_acf < acf[peak_index] - acf_noise))
-    
-
-    min_period = 1/new_lags[f_max]
-    max_period = 1/new_lags[f_min]
-    upp_err = max_period - 1/max_lags
-    low_err = (1/max_lags) - min_period
-    ls_upp_err = np.fmax(1/total_time, upp_err)
-    ls_low_err = np.fmax(1/total_time, low_err)
-
-    
-
-    print('period =', max_lags, "+", ls_upp_err, "-", ls_low_err)   
-      
-    
+    plot_graph(lags, acf, "Lags", "ACF", "AutoCorrelation")
+ 
 
 #def wavelets(time, flux):
 
@@ -265,7 +220,12 @@ def find_uncertainty_corr(lags, acf, total_time, acf_noise, period):
     #     plt.ylim(0,0.003)
     #     plt.show()
    
-
+def plot_graph(x, y, xlab, ylab, title):
+    plt.plot(x, y)
+    plt.title(title)
+    plt.xlabel(xlab)
+    plt.ylabel(ylab)
+    plt.show()
 
 #Arrays to hold each column of data of the input file.
 time = []

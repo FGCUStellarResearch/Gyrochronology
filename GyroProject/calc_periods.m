@@ -58,13 +58,6 @@ saveas(gcf,strcat('LS/',num2str(star_no),'_',pipeline,'_','ls','.png'))
 
 %Create a randomized flux string
 frand = randperm(length(fflux));
-
-%ls_noise = median(P);
-%get noise from 0 to twice max freq (or max freq if smaller); remember to
-%sqare root!
-
-%ls_snr = max(P)/ls_noise;
-
 %Error estimation
 %Start with estimating noise level in LS
 ls_noise = std(diff(P));
@@ -88,7 +81,7 @@ if isempty(f_min)
 end
 if isempty(f_max)
     f_max = numel(p)-1;
-end
+end 
 
 min_period = 1/f_int(f_max);
 max_period = 1/f_int(f_min);

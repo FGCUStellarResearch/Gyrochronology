@@ -1,0 +1,45 @@
+    
+def find_uncertainty_corr(lags, acf, total_time, acf_noise, period):
+
+    # Find peak index, which is the second peak, the one *after* the first values that are smoothing the curve. 
+    peak_index = np.where(lags == period)[0][0]
+    max_lags = lags[peak_index]
+    
+   
+    # 
+    lags_low = .65 * max_lags
+    lags_high = 1.30 * max_lags
+    lags_step = (lags_high - lags_low)/100
+    new_lags = np.arange(lags_low, lags_high, lags_step) 
+   
+
+    # 
+    pchip_obj = scipy.interpolate.PchipInterpolator(lags, acf)
+    new_acf = pchip_obj(new_lags)
+    
+    # 
+    new_peak = np.where(new_lags == np.max(new_lags))[0][0]
+    
+    
+    # 
+    upper_acf = new_acf[new_peak:]
+    lower_acf = new_acf[1 :new_peak]
+   
+
+    #  
+    f_max = new_peak + np.argmax(upper_acf < acf[peak_index] - acf_noise)
+    f_min = np.max(np.where(lower_acf < acf[peak_index] - acf_noise))
+    
+
+    min_period = 1/new_lags[f_max]
+    max_period = 1/new_lags[f_min]
+    upp_err = max_period - 1/max_lags
+    low_err = (1/max_lags) - min_period
+    ls_upp_err = np.fmax(1/total_time, upp_err)
+    ls_low_err = np.fmax(1/total_time, low_err)
+
+    
+
+    print('period =', max_lags, "+", ls_upp_err, "-", ls_low_err)   
+      
+  
