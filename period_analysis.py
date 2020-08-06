@@ -8,6 +8,7 @@ import csv
 import pandas as pd
 import os
 from scipy.fftpack import fft
+import seaborn as sns
 import scaleogram as scg
 import pywt
 from scipy import signal
@@ -150,15 +151,17 @@ def autoCorr(time, flux):
  
 
 def wavelets(time, flux):
+    flux = flux/np.median(flux)-1
+    flux = flux/np.std(np.diff(flux))
 
-    scales = scg.periods2scales(np.arange(1, 1000))
-
-    scg.set_default_wavelet('cmor2-2.0')
-
-    ax2 = scg.cws(time,flux, scales=scales)
+    # Convert time to np array for scaleogram.
+    time = np.asarray(time)
     
-    plt.plot(ax2)
-
+    scales = scg.periods2scales(np.arange(1, 1000))
+    scg.set_default_wavelet('cmor2-2.0')
+    
+    ax2 = scg.cws(time, flux, scales=scales, coikw={'alpha':0.5, 'hatch':'/' })
+    plt.show()
     
 
 # def dft(time, flux):
@@ -184,7 +187,7 @@ def wavelets(time, flux):
     #     plt.ylim(0,0.003)
     #     plt.show()
    
-def plot_graph(x, y, xlab, ylab, title):
+def plot_graph(x, y, xlab=None, ylab=None, title=None):
     plt.plot(x, y)
     plt.title(title)
     plt.xlabel(xlab)
