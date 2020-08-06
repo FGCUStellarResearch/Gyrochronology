@@ -25,9 +25,9 @@ from astropy.convolution import convolve, Box1DKernel
 
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, flux, snr):
-    plotLombScargle(time, detrended_flux)
-    autoCorr(time, detrended_flux)
-    #wavelets(time,flux)
+    # plotLombScargle(time, detrended_flux)
+    # autoCorr(time, detrended_flux)
+    wavelets(time,flux)
     #dft(time,flux)
 
 # Plotting the Lomb-Scargle Algorithm.
@@ -149,53 +149,17 @@ def autoCorr(time, flux):
     plot_graph(lags, acf, "Lags", "ACF", "AutoCorrelation")
  
 
-#def wavelets(time, flux):
+def wavelets(time, flux):
 
-    #  wavelet = 'cmor1.5-1.0'
+    scales = scg.periods2scales(np.arange(1, 1000))
+
+    scg.set_default_wavelet('cmor2-2.0')
+
+    ax2 = scg.cws(time,flux, scales=scales)
     
-    #  wave , period = pywt.dwt(signal.detrend(flux)/np.mean(flux),stats.mode(np.diff(time)))
-    #  awave = abs(wave)
+    plt.plot(ax2)
 
-    #  plt.plot(awave/max(awave), period)
-     
-    #  plt.xticks(visible = False)
-    #  plt.yticks(visible = False)
-    #  plt.xlabel('Time (d)')
-    #  plt.ylabel('Period (d)')
-    #  plt.title('Wavelet')
-    #  plt.colorbar()
-    #  plt.show()
-    # # # colormap jet
-
-    #scg.set_default_wavelet('cmor2-3.0')
-
-    # time, flux = pywt.data.nino()
-    # dt = time[1] - time[0]
-
-    # Taken from http://nicolasfauchereau.github.io/climatecode/posts/wavelet-analysis-in-python/
-    #wavelet = 'cmor2-1.5'
-    #scales = np.arange(1, 20)
-    # scales = scg.periods2scales(0.05*np.arange(1, 1000))
-    # ax = scg.cws(time, flux - np.mean(flux), scales = scales, figsize = (7,2))
-
-    # [cfs, frequencies] = pywt.cwt(flux, scales, wavelet, dt)
-    # power = (abs(cfs)) 
-
-    # period = 1. / frequencies
-    # levels = [0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8]
-    # f, ax = plt.subplots(figsize=(15, 10))
-    # ax.contourf(time, np.log2(period), np.log2(power), np.log2(levels),
-    #             extend='both')
-
-    # ax.set_title('%s Wavelet Power Spectrum (%s)' % ('Nino1+2', wavelet))
-    # ax.set_ylabel('Period (years)')
-    # Yticks = 2 ** np.arange(np.ceil(np.log2(period.min())),
-    #                         np.ceil(np.log2(period.max())))
-    # ax.set_yticks(np.log2(Yticks))
-    # ax.set_yticklabels(Yticks)
-    # ax.invert_yaxis()
-    # ylim = ax.get_ylim()
-    # ax.set_ylim(ylim[0], -1)
+    
 
 # def dft(time, flux):
 
