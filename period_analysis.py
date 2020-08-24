@@ -157,12 +157,27 @@ def wavelets(time, flux):
     # Convert time to np array for scaleogram.
     time = np.asarray(time)
     
+    # Spacing in time values for computing transform
+    dt = time[1] -time[0]
     scales = scg.periods2scales(np.arange(1, 1000))
     scg.set_default_wavelet('cmor2-2.0')
+    wavelet = scg.get_default_wavelet
+
+    #ax2 = scg.cws(time, flux, scales=scales, coikw={'alpha':0.5, 'hatch':'/' })
+    #plt.show()
     
-    ax2 = scg.cws(time, flux, scales=scales, coikw={'alpha':0.5, 'hatch':'/' })
-    plt.show()
+    # Same code in scaleogram package, used to visualize 1-D version of the data. 
+    coeff, scales_freq = scg.fastcwt(flux, scales, 'cmor2-2.0', dt)
+
+    # Sum all of the x values pertaining to each period value.
+    period_sum = []
+    for idx, arr in enumerate(coeff):
+        period_sum.append(np.sum(np.abs(arr)))
     
+    # Period values from the fastcwt function.
+    transformed_time = 1./scales_freq
+
+    plot_graph(transformed_time, period_sum)
 
 # def dft(time, flux):
 
