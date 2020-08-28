@@ -1,10 +1,10 @@
 import numpy as np
 import astropy as ap
+import File_Management
 from astropy.timeseries import LombScargle
 from statsmodels.graphics.tsaplots import plot_pacf
 from statsmodels.graphics.tsaplots import plot_acf
 import matplotlib.pyplot as plt
-import csv
 import pandas as pd
 import os
 from scipy.fftpack import fft
@@ -149,7 +149,6 @@ def autoCorr(time, flux):
 
     plot_graph(lags, acf, "Lags", "ACF", "AutoCorrelation")
  
-
 def wavelets(time, flux):
     flux = flux/np.median(flux)-1
     flux = flux/np.std(np.diff(flux))
@@ -179,29 +178,6 @@ def wavelets(time, flux):
 
     plot_graph(transformed_time, period_sum)
 
-# def dft(time, flux):
-
-    #     time = np.arange(0,100,0.1)
-    #     flux = np.sin(2*time)
-
-    #     delf = 1/(max(time)-min(time))
-    #     fout = np.arange(0,500*delf,delf)
-    #     XX = udft(time,flux,fout)
-
-    #     delf = 1/(max(time)-min(time))
-    #     fout = np.arange(0,500*delf,0.1*delf)
-    #     XX = udft(time,flux,fout)
-    #     amp = (2/len(time))*abs(XX)
-
-    #     max_freq = fout[np.argmax(amp[fout<1])]
-    #     print(max_freq)
-    #     print(1/max_freq)
-
-    #     plt.plot(fout,amp)
-    #     plt.xlim(0,0.5)
-    #     plt.ylim(0,0.003)
-    #     plt.show()
-   
 def plot_graph(x, y, xlab=None, ylab=None, title=None):
     plt.plot(x, y)
     plt.title(title)
@@ -209,35 +185,13 @@ def plot_graph(x, y, xlab=None, ylab=None, title=None):
     plt.ylabel(ylab)
     plt.show()
 
-#Arrays to hold each column of data of the input file.
-time = []
-raw_flux = []
-detrended_flux = []
-background = []
-x_pos = []
-y_pos = []
+File_Management.read_input_file()
 
-
-# Reading input file
-with open("example_K2_input.csv") as input_file:
-    read_input = csv.reader(input_file, delimiter = ",")
-    # Read each line and append data points to corresponding lists
-    for line in read_input:
-        time.append(line[0])
-        raw_flux.append(line[1])
-        detrended_flux.append(line[2])
-        background.append(line[3])
-        x_pos.append(line[4])
-        y_pos.append(line[5])
-
+time, detrended_flux, background = File_Management.get_data()
 
 # Change values in columns to float values for later processing.
 time = [float(data) for data in time]
 detrended_flux = [float(data) for data in detrended_flux]
-raw_flux = [float(data) for data in raw_flux]
 noise = [float(data) for data in background]
 
 calcPeriods(time, detrended_flux, noise)
-
-
-
