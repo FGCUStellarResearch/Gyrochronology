@@ -1,5 +1,5 @@
 import csv
-
+import re
 #Arrays to hold each column of data of the input file.
 time = []
 raw_flux = []
@@ -9,17 +9,21 @@ x_pos = []
 y_pos = []
 
 # Global for determining correct input when user inputs the file path.
-file_found = True
+file_found = False
 
 
 def read_input_file():
     # For testing algorithms input file is: "example_K2_input.csv"
     while True:
         file_path = input("Choose file for period analysis: ")
-        open_file(file_path)
+        csv = file_path.endswith(".csv")
+        if csv:
+            open_file(file_path)
         if file_found:
             print("File found, analyzing data...")
             break
+        print(f"No file found in path: \"{file_path}\". Please check your file path and try again.")
+
 
 
 def open_file(file_path):
@@ -38,7 +42,6 @@ def open_file(file_path):
                 y_pos.append(line[5])
             file_found = True
     except:
-        print(f"No file found in path: \"{file_path}\". Please check your file path and try again.")
         file_found = False
         return
 
