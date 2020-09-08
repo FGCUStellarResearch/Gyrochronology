@@ -26,10 +26,9 @@ from astropy.convolution import convolve, Box1DKernel
 
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, flux, snr):
-    # plotLombScargle(time, detrended_flux)
-    # autoCorr(time, detrended_flux)
-    wavelets(time,flux)
-    #dft(time,flux)
+    plotLombScargle(time, detrended_flux)
+    autoCorr(time, detrended_flux)
+    #wavelets(time,flux)
 
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
@@ -51,16 +50,17 @@ def plotLombScargle(time, flux):
     interp_coeff = [0.5, 2]
     peak_index = np.where(power == period)[0][0]
 
-    find_uncertainty(frequency, power, tot_time, noise, peak_index, interp_coeff)
+    # Finds lower and upper uncertainties. Values are saved and placed on the plot.
+    plt_text = find_uncertainty(frequency, power, tot_time, noise, peak_index, interp_coeff)
 
-    plot_graph(frequency, power, "Frequency - Cycles/Day", "Power", "Lomb-Scargle Periods")
+    # Temporary box coordinates, will have to be changed***
+    plot_graph(frequency, power, "Frequency - Cycles/Day", "Power", "Lomb-Scargle Periods", plt_text, .2, max(power))
     
 # Function for finding uncertainty in either Lomb-Scargle or Autocorrelation functions.
 def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
 
     # Finding the index with the most frequent period.
     max_freq = frequency[period_idx]
-    print(period_idx)
 
     # Create new frequency list with interpolated power values to find the first value more than one noise level below.
     freq_low = coeffs[0] * max_freq
@@ -82,7 +82,6 @@ def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
     # Index of frequency values lower than the difference of peak - noise. 
     f_max = new_peak + np.argmax(upper_pow < power[period_idx] - noise)
     f_min = np.max(np.where(lower_pow < power[period_idx]-noise))
-    print(f_min)
 
     min_period = 1/new_freq[f_max]
     max_period = 1/new_freq[f_min]
@@ -91,8 +90,9 @@ def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
     ls_upp_err = np.fmax(1/tot_time, upp_err)
     ls_low_err = np.fmax(1/tot_time, low_err)
 
-    # Use max in print function to differentiate between autocorrelation lag value, or lombscargle freqency value.
-    print('period =', max(1/max_freq, max_freq), "+", ls_upp_err, "-", ls_low_err)   
+    # Use max to differentiate between autocorrelation lag value, or lombscargle freqency value.
+    plt_text = 'Period = {:.5f}\nUncertainty\n+ {:.5f}\n- {:.5f}'.format(max(1/max_freq, max_freq), ls_upp_err, ls_low_err)
+    return plt_text
 
 # Running autocorrelation on data set.
 def autoCorr(time, flux):
@@ -141,13 +141,14 @@ def autoCorr(time, flux):
     peak_index = np.where(lags == period)[0][0]
 
 
-    find_uncertainty(lags , acf, total_time, acf_noise, peak_index, interp_coeff)
+    plt_text = find_uncertainty(lags , acf, total_time, acf_noise, peak_index, interp_coeff)
 
     plt.plot(lags,acf)
     plt.xlim(6, 12)
     plt.ylim(0.815,0.822)
 
-    plot_graph(lags, acf, "Lags", "ACF", "AutoCorrelation")
+    # Temporary box coordinates, will have to be changed***
+    plot_graph(lags, acf, "Lags", "ACF", "AutoCorrelation", plt_text, 11, .822)
  
 def wavelets(time, flux):
     flux = flux/np.median(flux)-1
@@ -176,13 +177,15 @@ def wavelets(time, flux):
     # Period values from the fastcwt function.
     transformed_time = 1./scales_freq
 
-    plot_graph(transformed_time, period_sum)
+    plot_graph(transformed_time, period_sum, "Period", "Sum per Period", "Wavelet Transformation - 1-D")
 
-def plot_graph(x, y, xlab=None, ylab=None, title=None):
+def plot_graph(x, y, xlab=None, ylab=None, title=None, plt_text=None, box_x =None, box_y = None):
     plt.plot(x, y)
     plt.title(title)
     plt.xlabel(xlab)
     plt.ylabel(ylab)
+    box = dict(boxstyle = 'round', facecolor = 'wheat', alpha = 0.5)
+    plt.text(box_x, box_y, plt_text, ha='left', va='center', bbox = box)
     plt.show()
 
 File_Management.read_input_file()

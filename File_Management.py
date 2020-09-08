@@ -9,7 +9,7 @@ x_pos = []
 y_pos = []
 
 # Global for determining correct input when user inputs the file path.
-file_found = False
+file_found = True
 
 
 def read_input_file():
@@ -18,10 +18,12 @@ def read_input_file():
         file_path = input("Choose file for period analysis: ")
         open_file(file_path)
         if file_found:
+            print("File found, analyzing data...")
             break
 
 
 def open_file(file_path):
+    global file_found
     # Reading input file
     try:
         with open(file_path) as input_file:
@@ -35,8 +37,8 @@ def open_file(file_path):
                 x_pos.append(line[4])
                 y_pos.append(line[5])
             file_found = True
-    except FileNotFoundError:
-        print("No file named \"%s\" was found. Please check your file path and try again.", file_path)
+    except:
+        print(f"No file found in path: \"{file_path}\". Please check your file path and try again.")
         file_found = False
         return
 
