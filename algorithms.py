@@ -16,19 +16,19 @@ from scipy.signal import find_peaks
 from astropy.convolution import convolve, Box1DKernel
 
 # Period finder, soon to utilize four different algorithms find periods in a data set.
-def calcPeriods(time, detrended_flux, snr):
+def calcPeriods(time, detrended_flux):
     plotLombScargle(time, detrended_flux)
-    autoCorr(time, detrended_flux)
-    #wavelets(time,flux)
+    #autoCorr(time, detrended_flux)
+    #wavelets(time,detrended_flux)
 
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
 
     tot_time = np.max(time) - np.min(time)
-
     # Plotting the period with the Lomb-Scargle method. 
     frequency,power = LombScargle(time, flux).autopower()
-
+    plt.plot(frequency,power)
+    plt.show()
     # Estimate of noise based on the std of power values.
     noise = np.std(np.diff(power))
 

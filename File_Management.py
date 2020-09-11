@@ -1,5 +1,7 @@
 import csv
 import re
+from astropy.io import fits
+import numpy as np
 #Arrays to hold each column of data of the input file.
 time = []
 raw_flux = []
@@ -13,12 +15,15 @@ file_found = False
 
 
 def read_input_file():
-    # For testing algorithms input file is: "example_K2_input.csv"
+    # For testing algorithms input csv is: "example_K2_input.csv" and fits: "ktwo212708252-c17_slc.fits"
     while True:
         file_path = input("Choose file for period analysis: ")
         csv = file_path.endswith(".csv")
+        fits = file_path.endswith(".fits")
         if csv:
-            open_file(file_path)
+            open_csv(file_path)
+        elif fits:
+            open_fits(file_path)
         if file_found:
             print("File found, analyzing data...")
             break
@@ -26,7 +31,7 @@ def read_input_file():
 
 
 
-def open_file(file_path):
+def open_csv(file_path):
     global file_found
     # Reading input file
     try:
@@ -44,6 +49,23 @@ def open_file(file_path):
     except:
         file_found = False
         return
+
+def open_fits(file_path):
+    fits_file = fits.open(file_path)
+    lightkurve = fits_file[1].data
+    fits_file.close()
+
+    data = np.asarray(lightkurve)
+    for idx in range(len(data['TIME'])):
+        if data['SAP_QUALITY'][idx] > 0:
+            continue
+        time.append(data['TIME'][idx])
+        detrended_flux.append(data['PDCSAP_FLUX'][idx])
+        background.append(data['SAP_BKG'][idx])
+    
+    global file_found
+    file_found = True
+
 
 # During testing, only three values are needed for period analysis algorithms.
 def get_data():
