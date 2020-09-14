@@ -56,13 +56,14 @@ def open_fits(file_path):
     fits_file.close()
 
     data = np.asarray(lightkurve)
+
     for idx in range(len(data['TIME'])):
         if data['SAP_QUALITY'][idx] > 0:
             continue
         time.append(data['TIME'][idx])
         detrended_flux.append(data['PDCSAP_FLUX'][idx])
         background.append(data['SAP_BKG'][idx])
-    
+
     global file_found
     file_found = True
 

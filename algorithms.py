@@ -19,11 +19,12 @@ from astropy.convolution import convolve, Box1DKernel
 def calcPeriods(time, detrended_flux):
     plotLombScargle(time, detrended_flux)
     #autoCorr(time, detrended_flux)
-    #wavelets(time,detrended_flux)
+    wavelets(time,detrended_flux)
 
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
-
+    plt.plot(time, flux)
+    plt.show()
     tot_time = np.max(time) - np.min(time)
     # Plotting the period with the Lomb-Scargle method. 
     frequency,power = LombScargle(time, flux).autopower()
@@ -153,8 +154,8 @@ def wavelets(time, flux):
     scg.set_default_wavelet('cmor2-2.0')
     wavelet = scg.get_default_wavelet
 
-    #ax2 = scg.cws(time, flux, scales=scales, coikw={'alpha':0.5, 'hatch':'/' })
-    #plt.show()
+    ax2 = scg.cws(time, flux, scales=scales, coikw={'alpha':0.5, 'hatch':'/' })
+    plt.show()
     
     # Same code in scaleogram package, used to visualize 1-D version of the data. 
     coeff, scales_freq = scg.fastcwt(flux, scales, 'cmor2-2.0', dt)
