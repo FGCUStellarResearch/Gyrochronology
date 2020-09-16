@@ -21,9 +21,9 @@ def read_input_file():
         csv = file_path.endswith(".csv")
         fits = file_path.endswith(".fits")
         if csv:
-            open_csv(file_path)
+            read_csv(file_path)
         elif fits:
-            open_fits(file_path)
+            read_fits(file_path)
         if file_found:
             print("File found, analyzing data...")
             break
@@ -31,7 +31,7 @@ def read_input_file():
 
 
 
-def open_csv(file_path):
+def read_csv(file_path):
     global file_found
     # Reading input file
     try:
@@ -50,7 +50,7 @@ def open_csv(file_path):
         file_found = False
         return
 
-def open_fits(file_path):
+def read_fits(file_path):
     fits_file = fits.open(file_path)
     lightkurve = fits_file[1].data
     fits_file.close()

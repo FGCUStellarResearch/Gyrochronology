@@ -18,18 +18,14 @@ from astropy.convolution import convolve, Box1DKernel
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, detrended_flux):
     plotLombScargle(time, detrended_flux)
-    #autoCorr(time, detrended_flux)
-    wavelets(time,detrended_flux)
+    autoCorr(time, detrended_flux)
+    #wavelets(time,detrended_flux)
 
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
-    plt.plot(time, flux)
-    plt.show()
     tot_time = np.max(time) - np.min(time)
     # Plotting the period with the Lomb-Scargle method. 
-    frequency,power = LombScargle(time, flux).autopower()
-    plt.plot(frequency,power)
-    plt.show()
+    frequency,power = LombScargle(time, signal.detrend(flux)).autopower()
     # Estimate of noise based on the std of power values.
     noise = np.std(np.diff(power))
 
@@ -135,8 +131,8 @@ def autoCorr(time, flux):
     plt_text = find_uncertainty(lags , acf, total_time, acf_noise, peak_index, interp_coeff)
 
     plt.plot(lags,acf)
-    plt.xlim(6, 12)
-    plt.ylim(0.815,0.822)
+    #plt.xlim(6, 12)
+    #plt.ylim(0.815,0.822)
 
     # Temporary box coordinates, will have to be changed***
     output.plot_graph(lags, acf, "Lags", "ACF", "AutoCorrelation", plt_text, 11, .822)
