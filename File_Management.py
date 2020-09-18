@@ -2,6 +2,7 @@ import csv
 import re
 from astropy.io import fits
 import numpy as np
+from scipy import signal
 #Arrays to hold each column of data of the input file.
 time = []
 raw_flux = []
@@ -51,18 +52,30 @@ def read_csv(file_path):
         return
 
 def read_fits(file_path):
+    # Use global values for lists.
+    global detrended_flux, raw_flux, time
+
     fits_file = fits.open(file_path)
     lightkurve = fits_file[1].data
     fits_file.close()
 
     data = np.asarray(lightkurve)
-
-    for idx in range(len(data['TIME'])):
-        if data['SAP_QUALITY'][idx] > 0:
+    
+    print(data[0][9])
+    # First column is generally time, flux the 8th column, and quality the 10th.
+    for idx in range(len(data)):
+        if data[idx][9] > 0:
             continue
-        time.append(data['TIME'][idx])
-        detrended_flux.append(data['PDCSAP_FLUX'][idx])
+        time.append(data[idx][0])
+        raw_flux.append(data[idx][7])
         background.append(data['SAP_BKG'][idx])
+
+    # Remove nan values extracted from fits file.
+    nan_idx = np.argwhere(np.isnan(raw_flux))
+    time = np.delete(time, nan_idx)
+    raw_flux = np.delete(raw_flux, nan_idx)
+    # Detrend flux values for period analysis.
+    detrended_flux = signal.detrend(raw_flux)
 
     global file_found
     file_found = True

@@ -19,7 +19,7 @@ from astropy.convolution import convolve, Box1DKernel
 def calcPeriods(time, detrended_flux):
     plotLombScargle(time, detrended_flux)
     autoCorr(time, detrended_flux)
-    #wavelets(time,detrended_flux)
+    wavelets(time,detrended_flux)
 
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
@@ -131,8 +131,8 @@ def autoCorr(time, flux):
     plt_text = find_uncertainty(lags , acf, total_time, acf_noise, peak_index, interp_coeff)
 
     plt.plot(lags,acf)
-    #plt.xlim(6, 12)
-    #plt.ylim(0.815,0.822)
+    plt.xlim(0, 50)
+    plt.ylim(0,1)
 
     # Temporary box coordinates, will have to be changed***
     output.plot_graph(lags, acf, "Lags", "ACF", "AutoCorrelation", plt_text, 11, .822)
@@ -150,8 +150,8 @@ def wavelets(time, flux):
     scg.set_default_wavelet('cmor2-2.0')
     wavelet = scg.get_default_wavelet
 
-    ax2 = scg.cws(time, flux, scales=scales, coikw={'alpha':0.5, 'hatch':'/' })
-    plt.show()
+    #ax2 = scg.cws(time, flux, scales=scales, coikw={'alpha':0.5, 'hatch':'/' })
+    #plt.show()
     
     # Same code in scaleogram package, used to visualize 1-D version of the data. 
     coeff, scales_freq = scg.fastcwt(flux, scales, 'cmor2-2.0', dt)
