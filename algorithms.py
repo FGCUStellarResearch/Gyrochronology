@@ -17,9 +17,10 @@ from astropy.convolution import convolve, Box1DKernel
 
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, detrended_flux):
+    output.plot_graph(time, detrended_flux)
     plotLombScargle(time, detrended_flux)
-    autoCorr(time, detrended_flux)
-    wavelets(time,detrended_flux)
+    #autoCorr(time, detrended_flux)
+    #wavelets(time,detrended_flux)
 
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
@@ -140,13 +141,13 @@ def autoCorr(time, flux):
 def wavelets(time, flux):
     flux = flux/np.median(flux)-1
     flux = flux/np.std(np.diff(flux))
-
+    
     # Convert time to np array for scaleogram.
     time = np.asarray(time)
-    
+    print(len(time))
     # Spacing in time values for computing transform
     dt = time[1] -time[0]
-    scales = scg.periods2scales(np.arange(1, 1000))
+    scales = scg.periods2scales(np.arange(1, len(time)))
     scg.set_default_wavelet('cmor2-2.0')
     wavelet = scg.get_default_wavelet
 

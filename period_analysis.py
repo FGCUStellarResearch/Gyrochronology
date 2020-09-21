@@ -1,10 +1,11 @@
 import File_Management
+import data_process
 import algorithms as alg
 import numpy as np
 
 File_Management.read_input_file()
 
-time, detrended_flux, background = File_Management.get_data()
+time, detrended_flux, background = data_process.get_data()
 # Change values in columns to float values for later processing.
 time = [float(data) for data in time]
 detrended_flux = [float(data) for data in detrended_flux]
