@@ -17,9 +17,9 @@ from astropy.convolution import convolve, Box1DKernel
 
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, detrended_flux):
-    output.plot_graph(time, detrended_flux)
-    plotLombScargle(time, detrended_flux)
-    #autoCorr(time, detrended_flux)
+    #output.plot_graph(time, detrended_flux)
+    #plotLombScargle(time, detrended_flux)
+    autoCorr(time, detrended_flux)
     #wavelets(time,detrended_flux)
 
 # Plotting the Lomb-Scargle Algorithm.
@@ -50,24 +50,23 @@ def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
 
     # Finding the index with the most frequent period.
     max_freq = frequency[period_idx]
-
     # Create new frequency list with interpolated power values to find the first value more than one noise level below.
     freq_low = coeffs[0] * max_freq
     freq_high = coeffs[1] * max_freq
     freq_step = (freq_high - freq_low)/100
     new_freq = np.arange(freq_low, freq_high, freq_step)
-
+    
     # Create object to interpolate power values from created frequency values.
     pchip_obj = scipy.interpolate.PchipInterpolator(frequency, power)
     new_power = pchip_obj(new_freq)
-
+    print(new_power)
     # Index of the maximum power value inside new_power
     new_peak = np.where(new_power == np.max(new_power))[0][0]
-    
+    print(new_peak)
     # Split frequencies into upper and lower ranges to identify higher and lower uncertainties.
     upper_pow = new_power[new_peak:]
     lower_pow = new_power[1:new_peak]
-
+    print(lower_pow)
     # Index of frequency values lower than the difference of peak - noise. 
     f_max = new_peak + np.argmax(upper_pow < power[period_idx] - noise)
     f_min = np.max(np.where(lower_pow < power[period_idx]-noise))
@@ -98,7 +97,7 @@ def autoCorr(time, flux):
     # Only look at positive values.
     acf = acf[lags > 0]
     lags = lags[lags > 0]
-
+    
     # Change lags to time units.
     del_t = np.median(np.diff(time))
     lags = lags * del_t
@@ -112,14 +111,13 @@ def autoCorr(time, flux):
 
     # Find peaks that are in the positive range.
     pks, _ = scipy.signal.find_peaks(smooth_acf, distance = 30)
-    pks
+    
     
     potential_periods = lags[pks]
-    
     # The first peak (after the smoothing window) will be our period for this data. 
     potential_periods = potential_periods[acf[pks] > 0]
-    period = potential_periods[potential_periods > kernel_size * del_t]
-    period = period[0]
+    #period = potential_periods[potential_periods > kernel_size * del_t]
+    period = potential_periods[0]
 
     # Noise level of acf plot.
     acf_noise = np.std(np.diff(acf))
@@ -128,7 +126,6 @@ def autoCorr(time, flux):
     # Values used when creating interpolated values in uncertainty function. 
     interp_coeff = [0.65, 1.30]
     peak_index = np.where(lags == period)[0][0]
-
     plt_text = find_uncertainty(lags , acf, total_time, acf_noise, peak_index, interp_coeff)
 
     plt.plot(lags,acf)
