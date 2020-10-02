@@ -39,6 +39,7 @@ def plotLombScargle(time, flux):
     interp_coeff = [0.5, 2]
     peak_index = np.where(power == period)[0][0]
 
+    
     # Finds lower and upper uncertainties. Values are saved and placed on the plot.
     plt_text = find_uncertainty(frequency, power, tot_time, noise, peak_index, interp_coeff)
 
@@ -48,6 +49,8 @@ def plotLombScargle(time, flux):
 # Function for finding uncertainty in either Lomb-Scargle or Autocorrelation functions.
 def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
 
+    plt.plot(frequency, power)
+    plt.show()
     # Finding the index with the most frequent period.
     max_freq = frequency[period_idx]
     # Create new frequency list with interpolated power values to find the first value more than one noise level below.
@@ -89,7 +92,7 @@ def autoCorr(time, flux):
 
     flux = -1 + flux/np.median(flux)
 
-    a = plt.acorr(flux, maxlags = 2000)
+    a = plt.acorr(flux, maxlags = 2000, usevlines = False)
 
     # Split results of autocorrelation function into two values.
     lags = a[0]
@@ -116,11 +119,12 @@ def autoCorr(time, flux):
     potential_periods = lags[pks]
     # The first peak (after the smoothing window) will be our period for this data. 
     potential_periods = potential_periods[acf[pks] > 0]
-    #period = potential_periods[potential_periods > kernel_size * del_t]
+    period = potential_periods[potential_periods > kernel_size * del_t]
     period = potential_periods[0]
 
     # Noise level of acf plot.
     acf_noise = np.std(np.diff(acf))
+
 
     total_time = np.max(time) - np.min(time)
     # Values used when creating interpolated values in uncertainty function. 

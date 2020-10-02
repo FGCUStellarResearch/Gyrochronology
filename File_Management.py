@@ -54,6 +54,9 @@ def read_fits(file_path):
     data_process.read_fits_data(data)
     
     # Remove nan values extracted from fits file.
-    data_process.clean_fits()
-    
+    if("tess" in file_path):
+        data_process.clean_tess()
+    elif("ktwo" or "k2" in file_path):
+        data_process.clean_k2()
+
     file_found = True

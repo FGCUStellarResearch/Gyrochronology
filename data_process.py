@@ -22,7 +22,7 @@ def read_fits_data(fits_data):
         raw_flux.append(fits_data[idx][7])
         background.append(fits_data['SAP_BKG'][idx])
 
-def clean_fits():
+def clean_tess():
     global time, raw_flux, detrended_flux
 
     #Index of zero values, used to find gap in TESS data.
@@ -33,10 +33,19 @@ def clean_fits():
     # Change each zero value, to appropriate mode-spaced time values.
     for idx in nan_idx:
         time[idx[0]] = time[idx[0]- 1] + time_mode
-    #time = np.delete(time,nan_idx)
-    #raw_flux = np.delete(raw_flux, nan_idx)
+
 
     # Detrend flux values for period analysis.
+    detrended_flux = signal.detrend(raw_flux)
+
+def clean_k2():
+    global time, raw_flux, detrended_flux
+
+    nan_idx = np.argwhere(np.isnan(raw_flux))
+
+    time =  np.delete(time, nan_idx)
+    raw_flux = np.delete(raw_flux, nan_idx)
+
     detrended_flux = signal.detrend(raw_flux)
 
 def read_csv_data(csv_file):

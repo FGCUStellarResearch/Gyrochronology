@@ -12,4 +12,4 @@ detrended_flux = [float(data) for data in detrended_flux]
 noise = [float(data) for data in background]
 
 
-alg.calcPeriods(np.asarray(time), np.array(detrended_flux))
+alg.calcPeriods(np.asarray(time), np.asarray(detrended_flux))
