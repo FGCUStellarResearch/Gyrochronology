@@ -36,7 +36,10 @@ def clean_tess():
 
 
     # Detrend flux values for period analysis.
-    detrended_flux = signal.detrend(raw_flux)
+    print(np.min(raw_flux))
+    detrended_flux = raw_flux
+    print(np.min(detrended_flux))
+
 
 def clean_k2():
     global time, raw_flux, detrended_flux
