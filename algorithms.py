@@ -20,13 +20,13 @@ def calcPeriods(time, detrended_flux):
     output.plot_graph(time, detrended_flux)
     plotLombScargle(time, detrended_flux)
     autoCorr(time, detrended_flux)
-    #wavelets(time,detrended_flux)
+    wavelets(time,detrended_flux)
 
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
     tot_time = np.max(time) - np.min(time)
     # Plotting the period with the Lomb-Scargle method. 
-    frequency,power = LombScargle(time, signal.detrend(flux)).autopower()
+    frequency,power = LombScargle(time, flux).autopower()
     # Estimate of noise based on the std of power values.
     noise = np.std(np.diff(power))
 
@@ -112,14 +112,14 @@ def autoCorr(time, flux):
     # Find peaks that are in the positive range.
     pks, _ = scipy.signal.find_peaks(smooth_acf, distance = 30)
     
-    plt.plot(lags, acf)
-    plt.show()
+    #plt.plot(lags, acf)
+    #plt.show()
     potential_periods = lags[pks]
-    print(potential_periods)
+    #print(potential_periods)
     # The first peak (after the smoothing window) will be our period for this data. 
     potential_periods = potential_periods[acf[pks] > 0]
     period = potential_periods[potential_periods > kernel_size * del_t]
-    print(period)
+    #print(period)
     period = period[0]
     # Noise level of acf plot.
     acf_noise = np.std(np.diff(acf))
@@ -129,6 +129,7 @@ def autoCorr(time, flux):
     # Values used when creating interpolated values in uncertainty function. 
     interp_coeff = [0.65, 1.30]
     peak_index = np.argwhere(lags == period)[0][0]
+    
     print(peak_index)
     plt_text = find_uncertainty(lags , acf, total_time, acf_noise, peak_index, interp_coeff)
 
@@ -152,8 +153,8 @@ def wavelets(time, flux):
     scg.set_default_wavelet('cmor2-2.0')
     wavelet = scg.get_default_wavelet
 
-    #ax2 = scg.cws(time, flux, scales=scales, coikw={'alpha':0.5, 'hatch':'/' })
-    #plt.show()
+    ax2 = scg.cws(time, flux, scales=scales, coikw={'alpha':0.5, 'hatch':'/' })
+    plt.show()
     
     # Same code in scaleogram package, used to visualize 1-D version of the data. 
     coeff, scales_freq = scg.fastcwt(flux, scales, 'cmor2-2.0', dt)
