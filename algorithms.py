@@ -20,7 +20,7 @@ def calcPeriods(time, detrended_flux):
     output.plot_graph(time, detrended_flux)
     plotLombScargle(time, detrended_flux)
     autoCorr(time, detrended_flux)
-    wavelets(time,detrended_flux)
+    #wavelets(time,detrended_flux)
 
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
@@ -112,8 +112,8 @@ def autoCorr(time, flux):
     # Find peaks that are in the positive range.
     pks, _ = scipy.signal.find_peaks(smooth_acf, distance = 30)
     
-    #plt.plot(lags, acf)
-    #plt.show()
+    plt.plot(lags, acf)
+    plt.show()
     potential_periods = lags[pks]
     #print(potential_periods)
     # The first peak (after the smoothing window) will be our period for this data. 
