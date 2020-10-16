@@ -1,6 +1,8 @@
 import numpy as np
+import pandas as pd
 import scipy as sp
 from scipy import signal
+from math import nan
 
 time = []
 raw_flux = []
@@ -24,7 +26,7 @@ def read_fits_data(fits_data):
 
 def clean_tess():
     global time, raw_flux, detrended_flux
-
+    
     #Index of zero values, used to find gap in TESS data.
     nan_idx = np.argwhere(np.asarray(time) == 0)
     # Taking the most frequent spacing value, excluding the values that are zero.
@@ -33,13 +35,13 @@ def clean_tess():
     # Change each zero value, to appropriate mode-spaced time values.
     for idx in nan_idx:
         time[idx[0]] = time[idx[0]- 1] + time_mode
+        raw_flux[idx[0]] = nan
 
 
-    # Detrend flux values for period analysis.
-    print(np.min(raw_flux))
-    detrended_flux = raw_flux
-    print(np.min(detrended_flux))
-
+    # Attempting interpolation of flux values by using PANDAS
+    flux = pd.Series(raw_flux)
+    flux = flux.interpolate(method = 'slinear')
+    detrended_flux = flux.tolist()
 
 def clean_k2():
     global time, raw_flux, detrended_flux
