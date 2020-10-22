@@ -17,8 +17,8 @@ from astropy.convolution import convolve, Box1DKernel
 
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, detrended_flux):
-    output.plot_graph(time, detrended_flux)
-    plotLombScargle(time, detrended_flux)
+    # output.plot_graph(time, detrended_flux)
+    # plotLombScargle(time, detrended_flux)
     autoCorr(time, detrended_flux)
     #wavelets(time,detrended_flux)
 
@@ -38,7 +38,7 @@ def plotLombScargle(time, flux):
     # Values used when creating interpolated values in uncertainty function. 
     interp_coeff = [0.5, 2]
     peak_index = np.where(power == period)[0][0]
-
+    print(period)
     
     # Finds lower and upper uncertainties. Values are saved and placed on the plot.
     plt_text = find_uncertainty(frequency, power, tot_time, noise, peak_index, interp_coeff)
@@ -84,12 +84,12 @@ def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
 
 # Running autocorrelation on data set.
 def autoCorr(time, flux):
-    # Lag for this data is half the  number of days in K2 observations(40) multiplied by the amount of observations per day - 48 (30 min cadence)
-    #lag = ((max(time) - min(time))/2) * 48
+    
+    num_lags = np.floor(len(time)/2)
     
     flux = -1 + flux/np.median(flux)
 
-    a = plt.acorr(flux, maxlags = 2000, usevlines = False)
+    a = plt.acorr(flux, maxlags=int(num_lags*2), usevlines = False)
 
     # Split results of autocorrelation function into two values.
     lags = a[0]
@@ -103,24 +103,21 @@ def autoCorr(time, flux):
     lags = lags * del_t
 
     # Smooth acf curve. 
-    kernel_size = 31
-    smooth_acf = convolve(acf, Box1DKernel(kernel_size))
-
-    kernel_size = 31
+    kernel_size = np.floor(0.5/np.mean(np.diff(time)))
     smooth_acf = convolve(acf, Box1DKernel(kernel_size))
 
     # Find peaks that are in the positive range.
-    pks, _ = scipy.signal.find_peaks(smooth_acf, distance = 30)
+    pks, _ = scipy.signal.find_peaks(smooth_acf, distance = kernel_size)
     
-    plt.plot(lags, acf)
-    plt.show()
     potential_periods = lags[pks]
-    #print(potential_periods)
+    
     # The first peak (after the smoothing window) will be our period for this data. 
     potential_periods = potential_periods[acf[pks] > 0]
     period = potential_periods[potential_periods > kernel_size * del_t]
-    #print(period)
-    period = period[0]
+
+    print(period)
+    period = period[1]
+    print(period)
     # Noise level of acf plot.
     acf_noise = np.std(np.diff(acf))
 
@@ -129,16 +126,21 @@ def autoCorr(time, flux):
     # Values used when creating interpolated values in uncertainty function. 
     interp_coeff = [0.65, 1.30]
     peak_index = np.argwhere(lags == period)[0][0]
-    
     print(peak_index)
     plt_text = find_uncertainty(lags , acf, total_time, acf_noise, peak_index, interp_coeff)
 
-    plt.plot(lags,acf)
-    plt.xlim(0, 50)
-    plt.ylim(0,1)
+    # Hold max and min values for plot window
+    max_x = np.max(lags)
+    min_x = np.min(lags)
+    max_y = np.max(acf)
+    min_y = np.min(acf)
 
+    plt.plot(lags,acf)
+    plt.xlim(min_x * 1.25, max_x * 1.25)
+    plt.ylim(min_y * 1.25, max_y * 1.25)
+    plt.show()
     # Temporary box coordinates, will have to be changed***
-    output.plot_graph(lags, acf, "Lags", "ACF", "AutoCorrelation", plt_text, 11, .822)
+    output.plot_graph(lags, acf, "Lags", "ACF", "AutoCorrelation", plt_text, max_x * 1.1, np.max(acf) * 1.1)
  
 def wavelets(time, flux):
     flux = flux/np.median(flux)-1
