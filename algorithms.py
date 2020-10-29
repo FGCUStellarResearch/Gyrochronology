@@ -17,10 +17,18 @@ from astropy.convolution import convolve, Box1DKernel
 
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, detrended_flux):
-    output.plot_graph(time, detrended_flux)
-    # plotLombScargle(time, detrended_flux)
-    autoCorr(time, detrended_flux)
-    #wavelets(time,detrended_flux)
+    menu_sel = input("Select analysis method: \n1 - Time Series \n2 - Lomb-Scargle \n3 - Autocorrelation \n4 - Wavelets\n")
+    
+    if(menu_sel == "1"):
+        output.plot_graph(time, detrended_flux)
+    elif(menu_sel == "2"):
+        plotLombScargle(time, detrended_flux)
+    elif(menu_sel == "3"):
+        autoCorr(time, detrended_flux)
+    elif(menu_sel == "4"):        
+        wavelets(time,detrended_flux)
+    else:
+        print("This is not a valid menu option.")
 
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
