@@ -98,7 +98,6 @@ def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
 def autoCorr(time, flux):
     
     num_lags = np.floor(len(time)/2)
-    
     flux = -1 + flux/np.median(flux)
 
     a = plt.acorr(flux, maxlags=int(num_lags*2), usevlines = False)
@@ -116,17 +115,15 @@ def autoCorr(time, flux):
 
     # Smooth acf curve. 
     kernel_size = np.floor(0.5/np.mean(np.diff(time)))
+    print(kernel_size)
     smooth_acf = convolve(acf, Box1DKernel(kernel_size))
-
     # Find peaks that are in the positive range.
     pks, _ = scipy.signal.find_peaks(smooth_acf, distance = kernel_size)
     
     potential_periods = lags[pks]
-    
     # The first peak (after the smoothing window) will be our period for this data. 
     potential_periods = potential_periods[acf[pks] > 0]
     period = potential_periods[potential_periods > kernel_size * del_t]
-
     print(period)
     period = period[1]
     print(period)
@@ -147,7 +144,7 @@ def autoCorr(time, flux):
     max_y = np.max(acf)
     min_y = np.min(acf)
 
-    plt.plot(lags,acf)
+    plt.plot(lags,smooth_acf)
     plt.xlim(min_x * 1.25, max_x * 1.25)
     plt.ylim(min_y * 1.25, max_y * 1.25)
     plt.show()
