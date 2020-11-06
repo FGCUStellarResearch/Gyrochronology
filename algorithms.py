@@ -100,7 +100,7 @@ def autoCorr(time, flux):
     num_lags = np.floor(len(time)/2)
     flux = -1 + flux/np.median(flux)
 
-    a = plt.acorr(flux, maxlags=int(num_lags*2), usevlines = False)
+    a = plt.acorr(flux, maxlags=int(num_lags), usevlines = False)
 
     # Split results of autocorrelation function into two values.
     lags = a[0]
@@ -112,7 +112,7 @@ def autoCorr(time, flux):
     # Change lags to time units.
     del_t = np.median(np.diff(time))
     lags = lags * del_t
-
+    print(del_t)
     # Smooth acf curve. 
     kernel_size = np.floor(0.5/np.mean(np.diff(time)))
     print(kernel_size)
@@ -123,9 +123,18 @@ def autoCorr(time, flux):
     potential_periods = lags[pks]
     # The first peak (after the smoothing window) will be our period for this data. 
     potential_periods = potential_periods[acf[pks] > 0]
-    period = potential_periods[potential_periods > kernel_size * del_t]
+    # Find potential periods after one day lag. 
+    period = potential_periods[potential_periods > 1]
     print(period)
-    period = period[1]
+
+    # Get the indices of each potential period.
+    index = [np.where(lags == i)[0][0] for i in period]
+    print(index)
+    print(acf[index])
+    #Find the max period according to the acf values.
+    max_per = np.max(acf[index])
+    print(max_per)
+    period = np.where(acf == max_per)
     print(period)
     # Noise level of acf plot.
     acf_noise = np.std(np.diff(acf))
@@ -134,7 +143,7 @@ def autoCorr(time, flux):
     total_time = np.max(time) - np.min(time)
     # Values used when creating interpolated values in uncertainty function. 
     interp_coeff = [0.65, 1.30]
-    peak_index = np.argwhere(lags == period)[0][0]
+    peak_index = period[0][0]
     print(peak_index)
     plt_text = find_uncertainty(lags , acf, total_time, acf_noise, peak_index, interp_coeff)
 
