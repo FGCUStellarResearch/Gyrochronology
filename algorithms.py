@@ -125,17 +125,17 @@ def autoCorr(time, flux):
     potential_periods = potential_periods[acf[pks] > 0]
     # Find potential periods after one day lag. 
     period = potential_periods[potential_periods > 1]
-    print(period)
 
     # Get the indices of each potential period.
+    # The np.where function returns array values, so indexing at 0, 0 is needed to get the actual indices.
     index = [np.where(lags == i)[0][0] for i in period]
-    print(index)
-    print(acf[index])
-    #Find the max period according to the acf values.
-    max_per = np.max(acf[index])
-    print(max_per)
-    period = np.where(acf == max_per)
-    print(period)
+    
+    # Find the max period according to the smooth_acf values.
+    max_per = np.max(smooth_acf[index])
+
+    # Index of the max period
+    period = np.where(smooth_acf == max_per)
+
     # Noise level of acf plot.
     acf_noise = np.std(np.diff(acf))
 
@@ -144,7 +144,8 @@ def autoCorr(time, flux):
     # Values used when creating interpolated values in uncertainty function. 
     interp_coeff = [0.65, 1.30]
     peak_index = period[0][0]
-    print(peak_index)
+
+    # Call uncertainty function
     plt_text = find_uncertainty(lags , acf, total_time, acf_noise, peak_index, interp_coeff)
 
     # Hold max and min values for plot window
@@ -153,12 +154,11 @@ def autoCorr(time, flux):
     max_y = np.max(acf)
     min_y = np.min(acf)
 
-    plt.plot(lags,smooth_acf)
     plt.xlim(min_x * 1.25, max_x * 1.25)
     plt.ylim(min_y * 1.25, max_y * 1.25)
-    plt.show()
+    
     # Temporary box coordinates, will have to be changed***
-    output.plot_graph(lags, acf, "Lags", "ACF", "AutoCorrelation", plt_text, max_x * 1.1, np.max(acf) * 1.1)
+    output.plot_graph(lags, acf, "Lags", "ACF", "AutoCorrelation", plt_text, max_x * .90, max_per * 1.1)
  
 def wavelets(time, flux):
     flux = flux/np.median(flux)-1
