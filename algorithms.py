@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import scaleogram as scg
 import pywt
+from wavelets import WaveletAnalysis
+from wavelets import Morlet
 from scipy import signal
 from scipy import stats
 from scipy import fftpack
@@ -18,22 +20,23 @@ from astropy.convolution import convolve, Box1DKernel
 
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, detrended_flux):
-    while(True):
-        menu_sel = input("Select analysis method: \n1 - Time Series \n2 - Lomb-Scargle \n3 - Autocorrelation \n4 - Wavelets\n0 - Exit Program\n")
-
-        if(menu_sel == "1"):
-            output.plot_graph(time, detrended_flux)
-        elif(menu_sel == "2"):
-            plotLombScargle(time, detrended_flux)
-        elif(menu_sel == "3"):
-            autoCorr(time, detrended_flux)
-        elif(menu_sel == "4"):        
-            wavelets(time,detrended_flux)
-        elif(menu_sel == "0"):
-            sys.exit()
-        else:
-            print("This is not a valid menu option.")
-
+    paul_wav(time, detrended_flux)
+    #while(True):
+    '''
+    menu_sel = input("Select analysis method: \n1 - Time Series \n2 - Lomb-Scargle \n3 - Autocorrelation \n4 - Wavelets\n0 - Exit Program\n")
+    if(menu_sel == "1"):
+        output.plot_graph(time, detrended_flux)
+    elif(menu_sel == "2"):
+        plotLombScargle(time, detrended_flux)
+    elif(menu_sel == "3"):
+        autoCorr(time, detrended_flux)
+    elif(menu_sel == "4"):        
+        wavelets(time,detrended_flux)
+    elif(menu_sel == "0"):
+        sys.exit()
+    else:
+        print("This is not a valid menu option.")
+    '''
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
     tot_time = np.max(time) - np.min(time)
@@ -188,3 +191,17 @@ def wavelets(time, flux):
     transformed_time = 1./scales_freq
 
     output.plot_graph(transformed_time, period_sum, "Period", "Sum per Period", "Wavelet Transformation - 1-D")
+
+def paul_wav(time, flux):
+    dt = time[1] - time[0]
+    wa = WaveletAnalysis(data = flux, wavelet=Morlet(), dt=dt)
+    power = wa.wavelet_power
+    scales = wa.scales
+    t = wa.time
+    fig, ax = plt.subplots()
+    T, S = np.meshgrid(t, scales)
+    ax.contourf(T, S, power, 100)
+    ax.set_yscale('log')
+    plt.show()
+
+
