@@ -9,7 +9,7 @@ import pandas as pd
 import scaleogram as scg
 import pywt
 from wavelets import WaveletAnalysis
-from wavelets import Morlet
+from wavelets import Paul
 from scipy import signal
 from scipy import stats
 from scipy import fftpack
@@ -192,14 +192,23 @@ def wavelets(time, flux):
 
     output.plot_graph(transformed_time, period_sum, "Period", "Sum per Period", "Wavelet Transformation - 1-D")
 
+# Using Aaron O'Leary's wavelet package to compute the paul wavelet.
 def paul_wav(time, flux):
     dt = time[1] - time[0]
-    wa = WaveletAnalysis(data = flux, wavelet=Morlet(), dt=dt)
+    # Package implementation
+    wa = WaveletAnalysis(data = flux, time = time, wavelet=Paul(), dt=dt)
     power = wa.wavelet_power
     scales = wa.scales
     t = wa.time
+
+    #Attempting to plot period values on a 1-D grid.
+    plt.plot(scales , np.sum(power, axis=1))
+    plt.show()
+
+    # Plotting wavelet results on 2D map.
     fig, ax = plt.subplots()
     T, S = np.meshgrid(t, scales)
+
     ax.contourf(T, S, power, 100)
     ax.set_yscale('log')
     plt.show()
