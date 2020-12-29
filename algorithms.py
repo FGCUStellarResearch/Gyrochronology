@@ -199,8 +199,12 @@ def paul_wav(time, flux):
     wa = WaveletAnalysis(data = flux, time = time, wavelet=Paul(), dt=dt)
     power = wa.wavelet_power
     scales = wa.scales
-    t = wa.time
+    periods = wa.fourier_periods
+    frequencies = wa.fourier_frequencies
 
+    t = wa.time
+    
+    GPS(time, frequencies, periods,  np.sum(power, axis=1))
     #Attempting to plot period values on a 1-D grid.
     plt.plot(scales , np.sum(power, axis=1))
     plt.show()
@@ -212,5 +216,29 @@ def paul_wav(time, flux):
     ax.contourf(T, S, power, 100)
     ax.set_yscale('log')
     plt.show()
+
+def GPS(time, frequency, period, power_sum):
+    scale_factor = 0.19
+    scale_factor_low = 0.14
+    scale_factor_hi = 0.22
+
+    print(len(power_sum))
+    # Temporary lists to hold log-adjusted scale.
+    temp2 = []
+    temp3 = []
+
+    for i in range(1, len(period)):
+        temp2.append(np.log(power_sum[i]) - np.log(power_sum[i-1])) 
+        temp3.append(np.log(frequency[i]) - np.log(frequency[i-1]))
+    
+    gps_vals = 1-np.divide(temp2, temp3)
+    period_vals = np.divide(period[1:], scale_factor)
+    plt.plot(period_vals,gps_vals)
+    plt.show()
+
+    tot_len_ts = np.max(time) - np.min(time)
+    aa = np.max(gps_vals[period_vals<0.5*tot_len_ts])
+    print(aa)
+    
 
 
