@@ -18,25 +18,31 @@ import scipy.cluster
 from scipy.signal import find_peaks
 from astropy.convolution import convolve, Box1DKernel
 
+
+def selection(time, detrended_flux):
+
+    while(True):
+        menu_sel = input("Select analysis method: \n1 - Time Series \n2 - Lomb-Scargle \n3 - Autocorrelation \n4 - Wavelets\n0 - Exit Program\n")
+        if(menu_sel == "1"):
+            output.plot_graph(time, detrended_flux)
+        elif(menu_sel == "2"):
+            plotLombScargle(time, detrended_flux)
+        elif(menu_sel == "3"):
+            autoCorr(time, detrended_flux)
+        elif(menu_sel == "4"):        
+            wavelets(time, detrended_flux)
+        elif(menu_sel == "0"):
+            sys.exit()
+        else:
+            print("This is not a valid selction.")
+
+
 # Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, detrended_flux):
+    selection(time, detrended_flux)
     paul_wav(time, detrended_flux)
-    #while(True):
-    '''
-    menu_sel = input("Select analysis method: \n1 - Time Series \n2 - Lomb-Scargle \n3 - Autocorrelation \n4 - Wavelets\n0 - Exit Program\n")
-    if(menu_sel == "1"):
-        output.plot_graph(time, detrended_flux)
-    elif(menu_sel == "2"):
-        plotLombScargle(time, detrended_flux)
-    elif(menu_sel == "3"):
-        autoCorr(time, detrended_flux)
-    elif(menu_sel == "4"):        
-        wavelets(time,detrended_flux)
-    elif(menu_sel == "0"):
-        sys.exit()
-    else:
-        print("This is not a valid menu option.")
-    '''
+    
+  
 # Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
     tot_time = np.max(time) - np.min(time)
@@ -240,5 +246,3 @@ def GPS(time, frequency, period, power_sum):
     aa = np.max(gps_vals[period_vals<0.5*tot_len_ts])
     print(aa)
     
-
-

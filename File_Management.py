@@ -1,5 +1,9 @@
 import csv
+import glob
 import re
+import os
+import pathlib
+import pandas as pd
 from astropy.io import fits
 import numpy as np
 from scipy import signal
@@ -9,6 +13,8 @@ import data_process
 # Global for determining correct input when user inputs the file path.
 file_found = False
 
+
+'''
 def read_input_file():
     # For testing algorithms input csv is: "example_K2_input.csv" and fits: "ktwo212708252-c17_slc.fits"
     while True:
@@ -24,7 +30,7 @@ def read_input_file():
             break
         print(f"No file found in path: \"{file_path}\". Please check your file path and try again.")
 
-
+'''
 
 def read_csv(file_path):
     global file_found
@@ -60,3 +66,18 @@ def read_fits(file_path):
         data_process.clean_k2()
 
     file_found = True
+
+'''
+def multipleFiles():
+
+    directory = 'C:\\Users\\doryc\\Documents\\Gyrochronology\\Fits File'
+
+    for filename in os.listdir(directory):
+        
+        if filename.endswith(".fits"):
+            file_path = os.path.join(directory,filename)
+            read_fits(file_path)
+
+''' 
+  
+
