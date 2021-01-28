@@ -11,6 +11,6 @@ Florida Gulf Coast University and Embry-Riddle Aeronautical University.
 
 # Authors
 - Adam Dressel
-- Dory Mauretor
+- Dory Mauretour
 - Dr. Derek Buzasi
 
