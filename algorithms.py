@@ -37,7 +37,6 @@ def selection(time, detrended_flux):
             print("This is not a valid selction.")
 
 
-# Period finder, soon to utilize four different algorithms find periods in a data set.
 def calcPeriods(time, detrended_flux):
     selection(time, detrended_flux)
     paul_wav(time, detrended_flux)

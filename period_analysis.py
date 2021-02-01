@@ -3,7 +3,7 @@ import data_process
 import algorithms as alg
 import numpy as np
 
-File_Management.read_input_file()
+File_Management.open_dir()
 
 time, detrended_flux, background = data_process.get_data()
 # Change values in columns to float values for later processing.
