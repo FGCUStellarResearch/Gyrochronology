@@ -22,7 +22,7 @@ from astropy.convolution import convolve, Box1DKernel
 def selection(time, detrended_flux):
 
     while(True):
-        menu_sel = input("Select analysis method: \n1 - Time Series \n2 - Lomb-Scargle \n3 - Autocorrelation \n4 - Wavelets\n0 - Exit Program\n")
+        menu_sel = input("Select analysis method: \n1 - Time Series \n2 - Lomb-Scargle \n3 - Autocorrelation \n4 - Wavelets \n5 - All\n0 - Exit Program\n")
         if(menu_sel == "1"):
             output.plot_graph(time, detrended_flux)
         elif(menu_sel == "2"):
@@ -31,10 +31,15 @@ def selection(time, detrended_flux):
             autoCorr(time, detrended_flux)
         elif(menu_sel == "4"):        
             wavelets(time, detrended_flux)
+        elif(menu_sel == "5"):
+            output.plot_graph(time, detrended_flux)
+            plotLombScargle(time, detrended_flux)
+            autoCorr(time, detrended_flux)
+            wavelets(time, detrended_flux)
         elif(menu_sel == "0"):
             sys.exit()
         else:
-            print("This is not a valid selction.")
+            print("This is not a valid selection.")
 
 
 def calcPeriods(time, detrended_flux):
