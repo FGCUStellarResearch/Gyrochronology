@@ -84,19 +84,19 @@ def read_input_file(data_file):
         print(f"No file found in path: \"{data_file}\". Please check your file path and try again.")
 
 
-# def read_csv(file_path):
-#     global file_found
-#     # Reading input file
-#     try:
-#         with open(file_path) as input_file:
-#             read_input = csv.reader(input_file, delimiter = ",")
-#             # Read each line and append data points to corresponding lists
-#             data_process.read_csv_data(read_input)
+def read_csv(file_path):
+    global file_found
+    # Reading input file
+    try:
+        with open(file_path) as input_file:
+            read_input = csv.reader(input_file, delimiter = ",")
+            # Read each line and append data points to corresponding lists
+            data_process.read_csv_data(read_input)
            
-#             file_found = True
-#     except:
-#         file_found = False
-#         return
+            file_found = True
+    except:
+        file_found = False
+        return
 
         
 
