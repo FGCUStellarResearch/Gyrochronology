@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import astropy as ap
 import File_Management
+import data_process
 import output
 from astropy.timeseries import LombScargle
 import matplotlib.pyplot as plt
@@ -19,27 +20,30 @@ from scipy.signal import find_peaks
 from astropy.convolution import convolve, Box1DKernel
 
 
-def selection(time, detrended_flux):
+def selection(time, detrended_flux, algorithm):
 
-    while(True):
-        menu_sel = input("Select analysis method: \n1 - Time Series \n2 - Lomb-Scargle \n3 - Autocorrelation \n4 - Wavelets \n5 - All\n0 - Exit Program\n")
-        if(menu_sel == "1"):
-            output.plot_graph(time, detrended_flux)
-        elif(menu_sel == "2"):
-            plotLombScargle(time, detrended_flux)
-        elif(menu_sel == "3"):
-            autoCorr(time, detrended_flux)
-        elif(menu_sel == "4"):        
-            wavelets(time, detrended_flux)
-        elif(menu_sel == "5"):
-            output.plot_graph(time, detrended_flux)
-            plotLombScargle(time, detrended_flux)
-            autoCorr(time, detrended_flux)
-            wavelets(time, detrended_flux)
-        elif(menu_sel == "0"):
-            sys.exit()
-        else:
-            print("This is not a valid selection.")
+    print(len(time))
+    print(len(detrended_flux))
+
+    #algorithm = input("Select analysis method: \n1 - Time Series \n2 - Lomb-Scargle \n3 - Autocorrelation \n4 - Wavelets \n5 - All\n0 - Exit Program\n")
+    if(algorithm == "1"):
+        output.plot_graph(time, detrended_flux)
+    elif(algorithm == "2"):
+        plotLombScargle(time, detrended_flux)
+    elif(algorithm == "3"):
+        autoCorr(time, detrended_flux)
+    elif(algorithm == "4"):        
+        wavelets(time, detrended_flux)
+    elif(algorithm == "5"):
+        output.plot_graph(time, detrended_flux)
+        plotLombScargle(time, detrended_flux)
+        autoCorr(time, detrended_flux)
+        wavelets(time, detrended_flux)
+    elif(algorithm == "0"):
+        sys.exit()
+    else:
+        print("This is not a valid selection.")
+    data_process.clear_data()
 
 
 def calcPeriods(time, detrended_flux):

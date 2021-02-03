@@ -15,35 +15,22 @@ from tkinter import *
 # Global for determining correct input when user inputs the file path.
 file_found = False
 
-def read_one_file(file_path):
 
+#Pass in file from chosen directory.
+def read_input_file(data_file):
+    
     while True:
         #file_path = input("Choose file for period analysis: ")
-        csv = file_path.endswith(".csv")
-        fits = file_path.endswith(".fits")
+        csv = data_file.endswith(".csv")
+        fits = data_file.endswith(".fits")
         if csv:
-            read_one_csv(file_path)
+            read_csv(data_file)
         elif fits:
-            read_fits(file_path)
+            read_fits(data_file)
         if file_found:
             print("File found, analyzing data...")
             break
-       # print(f"No file found in path: \"{data_file}\". Please check your file path and try again.")
-
-def read_one_csv(file_path):
-    global file_found
-    # Reading input file
-    try:
-        with open(file_path) as input_file:
-            read_one_File = csv.reader(input_file, delimiter = ",")
-            # Read each line and append data points to corresponding lists
-            data_process.read_csv_data(read_one_File)
-           
-            file_found = True
-    except:
-        file_found = False
-        return
-
+        print(f"No file found in path: \"{data_file}\". Please check your file path and try again.")
 
 def read_fits(file_path):
     # Use global values for lists.
@@ -66,24 +53,6 @@ def read_fits(file_path):
 
     file_found = True
 
-
-#Pass in file from chosen directory.
-def read_input_file(data_file):
-    
-    while True:
-        #file_path = input("Choose file for period analysis: ")
-        csv = data_file.endswith(".csv")
-        fits = data_file.endswith(".fits")
-        if csv:
-            read_csv(data_file)
-        elif fits:
-            read_fits(data_file)
-        if file_found:
-            print("File found, analyzing data...")
-            break
-        print(f"No file found in path: \"{data_file}\". Please check your file path and try again.")
-
-
 def read_csv(file_path):
     global file_found
     # Reading input file
@@ -98,17 +67,17 @@ def read_csv(file_path):
         file_found = False
         return
 
-        
-
-
 def open_dir():
     root = Tk()
     root.filename = filedialog.askdirectory()
     
+    files = []
     for entry in os.listdir(root.filename):
         path = root.filename + "/" + entry
     
-
-        read_input_file(path)
+        print(path)
+        files.append(path)
+    root.destroy()
+    return files
   
 

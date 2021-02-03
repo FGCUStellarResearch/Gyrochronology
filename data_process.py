@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import scipy as sp
 from scipy import signal
+from statistics import mode
 from math import nan
 
 time = []
@@ -64,3 +65,11 @@ def read_csv_data(csv_file):
 
 def get_data():
     return (time, detrended_flux, background)
+
+def clear_data():
+    time.clear()
+    raw_flux.clear()
+    detrended_flux.clear()
+    background.clear()
+    x_pos.clear()
+    y_pos.clear()
