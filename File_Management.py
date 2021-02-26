@@ -31,6 +31,7 @@ def read_input_file(data_file):
             print("File found, analyzing data...")
             break
         print(f"No file found in path: \"{data_file}\". Please check your file path and try again.")
+        break
 
 def read_fits(file_path):
     # Use global values for lists.

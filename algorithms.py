@@ -22,9 +22,6 @@ from astropy.convolution import convolve, Box1DKernel
 
 def selection(time, detrended_flux, algorithm):
 
-    print(len(time))
-    print(len(detrended_flux))
-
     #algorithm = input("Select analysis method: \n1 - Time Series \n2 - Lomb-Scargle \n3 - Autocorrelation \n4 - Wavelets \n5 - All\n0 - Exit Program\n")
     if(algorithm == "1"):
         output.plot_graph(time, detrended_flux)
