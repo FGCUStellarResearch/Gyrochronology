@@ -4,6 +4,7 @@ import scipy as sp
 from scipy import signal
 from statistics import mode
 from math import nan
+import random
 
 time = []
 raw_flux = []
@@ -62,6 +63,23 @@ def read_csv_data(csv_file):
         background.append(line[3])
         x_pos.append(line[4])
         y_pos.append(line[5])
+
+# Create sin wave for testing the periodogram implementations.
+def create_sin():
+    global time, detrended_flux
+
+    time = list(np.arange(0, 100, 0.1))
+    detrended_flux = list(np.sin(time))
+    noise = np.random.normal(0,np.max(detrended_flux)*4,1000)
+    '''
+    for val in range(0, len(noise)):
+        rand_bool = random.getrandbits(1)
+        if(rand_bool==1):
+            detrended_flux[val] += noise[val]
+        else:
+            detrended_flux[val] -= noise[val]
+    '''
+    detrended_flux+= noise
 
 def get_data():
     return (time, detrended_flux, background)

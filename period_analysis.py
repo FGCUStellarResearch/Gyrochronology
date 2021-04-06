@@ -22,6 +22,7 @@ def pass_data(file_num, alg_choice = None):
         time = [float(data) for data in time]
         detrended_flux = [float(data) for data in detrended_flux]
         noise = [float(data) for data in background]
+
         alg.selection(time, detrended_flux, alg_choice)
 
 
@@ -42,7 +43,13 @@ while(menu):
                File_Management.read_input_file(path)
                pass_data(menu_selec, alg_choice)
            
+        elif(menu_selec == "3"):
+            data_process.create_sin()
+            alg_choice = input("Select analysis method: \n1 - Time Series \n2 - Lomb-Scargle \n3 - Autocorrelation \n4 - Wavelets \n5 - All\n0 - Exit Program\n")
+            time, detrended_flux, background = data_process.get_data()
 
+            alg.selection(time, detrended_flux, alg_choice)
+            
         elif(menu_selec == "0"):
             sys.exit()
         else:

@@ -53,19 +53,22 @@ def plotLombScargle(time, flux):
     tot_time = np.max(time) - np.min(time)
     # Plotting the period with the Lomb-Scargle method. 
     frequency,power = LombScargle(time, flux).autopower()
+    plt.plot(frequency,power)
+    plt.show()
     # Estimate of noise based on the std of power values.
     noise = np.std(np.diff(power))
-
+    
     # Truncate arrays to only view the first peak of the periodogram.
-    frequency = frequency[:int(len(frequency) * .0025)]
-    power = power[:int(len(power) * .0025)]
+    frequency = frequency[:int(len(frequency) * .25)]
+    power = power[:int(len(power) * .25)]
+    
     period = np.max(power)
 
     # Values used when creating interpolated values in uncertainty function. 
     interp_coeff = [0.5, 2]
     peak_index = np.where(power == period)[0][0]
-    print(period)
-    
+    #print(period)
+    #print(peak_index)
     # Finds lower and upper uncertainties. Values are saved and placed on the plot.
     plt_text = find_uncertainty(frequency, power, tot_time, noise, peak_index, interp_coeff)
 
@@ -74,10 +77,12 @@ def plotLombScargle(time, flux):
     
 # Function for finding uncertainty in either Lomb-Scargle or Autocorrelation functions.
 def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
-
-    
+    print(frequency, power)
+    plt.plot(frequency,power)
+    plt.show()
     # Finding the index with the most frequent period.
     max_freq = frequency[period_idx]
+    print(1/max_freq)
     # Create new frequency list with interpolated power values to find the first value more than one noise level below.
     freq_low = coeffs[0] * max_freq
     freq_high = coeffs[1] * max_freq
@@ -93,6 +98,10 @@ def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
     # Split frequencies into upper and lower ranges to identify higher and lower uncertainties.
     upper_pow = new_power[new_peak:]
     lower_pow = new_power[1:new_peak]
+    
+    print(lower_pow)
+    print(period_idx)
+
     # Index of frequency values lower than the difference of peak - noise. 
     f_max = new_peak + np.argmax(upper_pow < power[period_idx] - noise)
     f_min = np.max(np.where(lower_pow < power[period_idx]-noise))
