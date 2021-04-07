@@ -17,9 +17,6 @@ def read_fits_data(fits_data):
     # First column is generally time, flux the 8th column, and quality the 10th.
     for idx in range(len(fits_data)):
         #Code to check for gap in TESS observation.
-        if fits_data[idx][9] == 8 or fits_data[idx][9] == 136:
-            time.append(0)
-            raw_flux.append(0)    
         if fits_data[idx][9] > 0:
             continue
         time.append(fits_data[idx][0])

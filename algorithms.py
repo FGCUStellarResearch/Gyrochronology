@@ -77,12 +77,9 @@ def plotLombScargle(time, flux):
     
 # Function for finding uncertainty in either Lomb-Scargle or Autocorrelation functions.
 def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
-    print(frequency, power)
-    plt.plot(frequency,power)
-    plt.show()
+
     # Finding the index with the most frequent period.
     max_freq = frequency[period_idx]
-    print(1/max_freq)
     # Create new frequency list with interpolated power values to find the first value more than one noise level below.
     freq_low = coeffs[0] * max_freq
     freq_high = coeffs[1] * max_freq
@@ -98,13 +95,23 @@ def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
     # Split frequencies into upper and lower ranges to identify higher and lower uncertainties.
     upper_pow = new_power[new_peak:]
     lower_pow = new_power[1:new_peak]
-    
-    print(lower_pow)
     print(period_idx)
 
-    # Index of frequency values lower than the difference of peak - noise. 
-    f_max = new_peak + np.argmax(upper_pow < power[period_idx] - noise)
-    f_min = np.max(np.where(lower_pow < power[period_idx]-noise))
+    # Values that are less than one noise level below the peak.
+    lower_vals = np.where(lower_pow < power[period_idx] - noise)
+    upper_vals = new_peak + np.argmax(upper_pow < power[period_idx] - noise)
+    # Check to see if either arrays are empty. If they are, replace with the maximum frequency value.
+    if(lower_vals[0].size == 0):
+        f_min = int(np.max(new_freq))
+    else:
+        f_min =  np.max(lower_vals)
+    if(upper_vals.size == 0):
+        f_max = int(np.max(new_freq))
+    else:
+        f_max = new_peak + np.argmax(upper_pow < power[period_idx] - noise)
+
+    
+    
 
     min_period = 1/new_freq[f_max]
     max_period = 1/new_freq[f_min]
@@ -135,17 +142,17 @@ def autoCorr(time, flux):
     # Change lags to time units.
     del_t = np.median(np.diff(time))
     lags = lags * del_t
-    print(del_t)
     # Smooth acf curve. 
-    kernel_size = np.floor(0.5/np.mean(np.diff(time)))
-    print(kernel_size)
+    kernel_size = np.floor(5/np.mean(np.diff(time)))
     smooth_acf = convolve(acf, Box1DKernel(kernel_size))
     # Find peaks that are in the positive range.
     pks, _ = scipy.signal.find_peaks(smooth_acf, distance = kernel_size)
     
     potential_periods = lags[pks]
+    print("potential periods: ", potential_periods)
     # The first peak (after the smoothing window) will be our period for this data. 
     potential_periods = potential_periods[acf[pks] > 0]
+    
     # Find potential periods after one day lag. 
     period = potential_periods[potential_periods > 1]
 
@@ -155,10 +162,10 @@ def autoCorr(time, flux):
     
     # Find the max period according to the smooth_acf values.
     max_per = np.max(smooth_acf[index])
-
+    print("max_per:", max_per)
     # Index of the max period
     period = np.where(smooth_acf == max_per)
-
+    print("period in acf:", smooth_acf[period])
     # Noise level of acf plot.
     acf_noise = np.std(np.diff(acf))
 
@@ -167,7 +174,7 @@ def autoCorr(time, flux):
     # Values used when creating interpolated values in uncertainty function. 
     interp_coeff = [0.65, 1.30]
     peak_index = period[0][0]
-
+    print("peak_index:", period[0][0])
     # Call uncertainty function
     plt_text = find_uncertainty(lags , acf, total_time, acf_noise, peak_index, interp_coeff)
 
