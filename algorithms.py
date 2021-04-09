@@ -32,6 +32,8 @@ def selection(time, detrended_flux, algorithm):
     elif(algorithm == "4"):        
         wavelets(time, detrended_flux)
     elif(algorithm == "5"):
+        paul_wav(time, np.asarray(detrended_flux))
+    elif(algorithm == "6"):
         output.plot_graph(time, detrended_flux)
         plotLombScargle(time, detrended_flux)
         autoCorr(time, detrended_flux)
@@ -143,7 +145,8 @@ def autoCorr(time, flux):
     del_t = np.median(np.diff(time))
     lags = lags * del_t
     # Smooth acf curve. 
-    kernel_size = np.floor(5/np.mean(np.diff(time)))
+    kernel_size = np.floor(0.5/np.mean(np.diff(time)))
+    print("kernel_size: ", kernel_size)
     smooth_acf = convolve(acf, Box1DKernel(kernel_size))
     # Find peaks that are in the positive range.
     pks, _ = scipy.signal.find_peaks(smooth_acf, distance = kernel_size)

@@ -13,7 +13,7 @@ def pass_data(file_num, alg_choice = None):
         noise = [float(data) for data in background]
         
         while(True):
-            alg_choice = input("Select analysis method: \n1 - Time Series \n2 - Lomb-Scargle \n3 - Autocorrelation \n4 - Wavelets \n5 - All\n0 - Exit Program\n")
+            alg_choice = input("Select analysis method: \n1 - Time Series \n2 - Lomb-Scargle \n3 - Autocorrelation \n4 - Wavelets \n5 - GPS\n6 - All\n0 - Exit Program\n")
 
             alg.selection(time, detrended_flux, alg_choice)
     else:
