@@ -14,6 +14,11 @@ x_pos = []
 y_pos = []
 
 def read_fits_data(fits_data):
+    """Reads fits files and grabs columns corresponding to time, flux and noise.
+
+    Args:
+        fits_data (File): Fits file to be read.
+    """    
     # First column is generally time, flux the 8th column, and quality the 10th.
     for idx in range(len(fits_data)):
         #Code to check for gap in TESS observation.
@@ -24,6 +29,8 @@ def read_fits_data(fits_data):
         background.append(fits_data['SAP_BKG'][idx])
 
 def clean_tess():
+    """Removes nan values from Tess data, and interpolates flux values for gap in data.
+    """    
     global time, raw_flux, detrended_flux
     
     #Index of zero values, used to find gap in TESS data.
@@ -43,6 +50,8 @@ def clean_tess():
     detrended_flux = flux.tolist()
 
 def clean_k2():
+    """Removes nan values from k2 data.
+    """    
     global time, raw_flux, detrended_flux
 
     nan_idx = np.argwhere(np.isnan(raw_flux))
@@ -53,6 +62,12 @@ def clean_k2():
     detrended_flux = signal.detrend(raw_flux)
 
 def read_csv_data(csv_file):
+    """Data collection from a csv file. Currently only implemented for 
+       test K2 file.
+
+    Args:
+        csv_file (String): Location of csv_file.
+    """    
     for line in csv_file:
         time.append(line[0])
         raw_flux.append(line[1])
@@ -61,21 +76,15 @@ def read_csv_data(csv_file):
         x_pos.append(line[4])
         y_pos.append(line[5])
 
-# Create sin wave for testing the periodogram implementations.
 def create_sin():
+    """Test function that creates a simple sinusoid to test algorithms.
+    """    
     global time, detrended_flux
 
     time = list(np.arange(0, 100, 0.1))
     detrended_flux = list(np.sin(time))
     noise = np.random.normal(0,np.max(detrended_flux)*4,1000)
-    '''
-    for val in range(0, len(noise)):
-        rand_bool = random.getrandbits(1)
-        if(rand_bool==1):
-            detrended_flux[val] += noise[val]
-        else:
-            detrended_flux[val] -= noise[val]
-    '''
+    
     detrended_flux+= noise
 
 def get_data():

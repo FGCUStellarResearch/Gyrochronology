@@ -18,7 +18,11 @@ file_found = False
 
 #Pass in file from chosen directory.
 def read_input_file(data_file):
-    
+    """Determine file type and process data accordingly.
+
+    Args:
+        data_file (String): Path of file.
+    """    
     while True:
         #file_path = input("Choose file for period analysis: ")
         csv = data_file.endswith(".csv")
@@ -34,6 +38,12 @@ def read_input_file(data_file):
         break
 
 def read_fits(file_path):
+    """Open fits file and grab all of the data columns. 
+       Determine if TESS or K2 data.
+
+    Args:
+        file_path (String): Path of file.
+    """    
     # Use global values for lists.
     global file_found
 
@@ -55,6 +65,11 @@ def read_fits(file_path):
     file_found = True
 
 def read_csv(file_path):
+    """Process csv data, using comma delimiter.
+
+    Args:
+        file_path (String): Path of data file.
+    """    
     global file_found
     # Reading input file
     try:
@@ -69,6 +84,12 @@ def read_csv(file_path):
         return
 
 def open_dir():
+    """Used when analyzing multiple different files.
+       User chooses directory and then fits files are selected.
+
+    Returns:
+        List: List of Fits files found in chosen directory.
+    """    
     root = Tk()
     root.filename = filedialog.askdirectory()
     

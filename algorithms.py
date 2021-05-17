@@ -19,10 +19,31 @@ import scipy.cluster
 from scipy.signal import find_peaks
 from astropy.convolution import convolve, Box1DKernel
 
+'''
+Implementation of the period finding algorithms.
+
+- Lomb-Scargle Periodogram
+- Autocorrelation Function
+- Morlet Wavelet
+- Gradient of the Power Spectrum (using Paul Wavelet)
+
+To-Do:
+    - Convert command line interface to GUI
+    - Optimize wavelet function - runs too slowly. (change package?)
+    - Verify uncertainty implementation and accuracy.
+    - GPS/Paul unfinished?
+    - Fix windowing on output graphs. Properly show the peak, as well as uncertainty window.
+    - Continue testing on different fits files.
+'''
 
 def selection(time, detrended_flux, algorithm):
+    """Read menu selection, and call respsective algorithm.
 
-    #algorithm = input("Select analysis method: \n1 - Time Series \n2 - Lomb-Scargle \n3 - Autocorrelation \n4 - Wavelets \n5 - All\n0 - Exit Program\n")
+    Args:
+        time (List): Time values taken from processed data file.
+        detrended_flux (List): Flux values taken from processed data file.
+        algorithm (String): Menu selection number for chosen algorithm.
+    """
     if(algorithm == "1"):
         output.plot_graph(time, detrended_flux)
     elif(algorithm == "2"):
@@ -44,19 +65,18 @@ def selection(time, detrended_flux, algorithm):
         print("This is not a valid selection.")
     data_process.clear_data()
 
-
-def calcPeriods(time, detrended_flux):
-    selection(time, detrended_flux)
-    paul_wav(time, detrended_flux)
-    
   
-# Plotting the Lomb-Scargle Algorithm.
 def plotLombScargle(time, flux):
+    """Finding the period of the selected data with astropy's Lombscargle package.
+    *** Interpolation coefficients and truncated arrays are hardcoded, may need to be altered. ***
+
+    Args:
+        time (List): Time values from processed data file.
+        flux (List): Flux values from processed data file. 
+    """    
     tot_time = np.max(time) - np.min(time)
     # Plotting the period with the Lomb-Scargle method. 
     frequency,power = LombScargle(time, flux).autopower()
-    plt.plot(frequency,power)
-    plt.show()
     # Estimate of noise based on the std of power values.
     noise = np.std(np.diff(power))
     
@@ -69,17 +89,31 @@ def plotLombScargle(time, flux):
     # Values used when creating interpolated values in uncertainty function. 
     interp_coeff = [0.5, 2]
     peak_index = np.where(power == period)[0][0]
-    #print(period)
-    #print(peak_index)
+    
     # Finds lower and upper uncertainties. Values are saved and placed on the plot.
     plt_text = find_uncertainty(frequency, power, tot_time, noise, peak_index, interp_coeff)
 
     # Temporary box coordinates, will have to be changed***
     output.plot_graph(frequency, power, "Frequency - Cycles/Day", "Power", "Lomb-Scargle Periods", plt_text, .2, max(power))
     
-# Function for finding uncertainty in either Lomb-Scargle or Autocorrelation functions.
 def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
+    """Method to find uncertainty for the autocorrelation function and Lomb-Scargle Periodogram. 
+    Starting from the peak, we move 1 noise level down to the left and right of the peak.
+    How far the value moves along the x-axis after this noise "adjustment" corresponds to the uncertainty.
 
+    Args:
+        frequency (List): x-value of periodogram data. Lags in autocorrelation, Frequency in LS.
+        power (List): y-value of periodogram data. ACF for autocorrelation, Power in LS.
+        tot_time (Float): The total length of the data.
+        noise (Float): Standard deviation of the difference between values along the y-axis.
+        period_idx (Integer): Index of the peak period.
+        coeffs (List): Values used to interpolate the periodogram data. Interpolation needed to
+                       move along the peak.
+
+    Returns:
+        [String]: String containing the peak value, and the uncertainty window.
+                  Used to display in plotted graph.
+    """
     # Finding the index with the most frequent period.
     max_freq = frequency[period_idx]
     # Create new frequency list with interpolated power values to find the first value more than one noise level below.
@@ -97,11 +131,11 @@ def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
     # Split frequencies into upper and lower ranges to identify higher and lower uncertainties.
     upper_pow = new_power[new_peak:]
     lower_pow = new_power[1:new_peak]
-    print(period_idx)
 
     # Values that are less than one noise level below the peak.
     lower_vals = np.where(lower_pow < power[period_idx] - noise)
     upper_vals = new_peak + np.argmax(upper_pow < power[period_idx] - noise)
+
     # Check to see if either arrays are empty. If they are, replace with the maximum frequency value.
     if(lower_vals[0].size == 0):
         f_min = int(np.max(new_freq))
@@ -112,8 +146,6 @@ def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
     else:
         f_max = new_peak + np.argmax(upper_pow < power[period_idx] - noise)
 
-    
-    
 
     min_period = 1/new_freq[f_max]
     max_period = 1/new_freq[f_min]
@@ -126,9 +158,13 @@ def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
     plt_text = 'Period = {:.5f}\nUncertainty\n+ {:.5f}\n- {:.5f}'.format(max(1/max_freq, max_freq), ls_upp_err, ls_low_err)
     return plt_text
 
-# Running autocorrelation on data set.
 def autoCorr(time, flux):
-    
+    """Using autocorrelation function from MatPlotLib to find period.
+
+    Args:
+        time (List): Time values from processed data file.
+        flux (List): Flux values from processed data file.
+    """    
     num_lags = np.floor(len(time)/2)
     flux = -1 + flux/np.median(flux)
 
@@ -194,12 +230,19 @@ def autoCorr(time, flux):
     output.plot_graph(lags, acf, "Lags", "ACF", "AutoCorrelation", plt_text, max_x * .90, max_per * 1.1)
  
 def wavelets(time, flux):
+    """Using morlet wavelet from scaleogram package to determine period. 
+        Values are plotted on a 2-D contour map, and then transformed into
+        a 1-D plot.
+
+    Args:
+        time (List): Time values from processed data file.
+        flux (List): Flux values from processed data file.
+    """    
     flux = flux/np.median(flux)-1
     flux = flux/np.std(np.diff(flux))
     
     # Convert time to np array for scaleogram.
     time = np.asarray(time)
-    print(len(time))
     # Spacing in time values for computing transform
     dt = time[1] -time[0]
     scales = scg.periods2scales(np.arange(1, len(time)))
@@ -222,8 +265,15 @@ def wavelets(time, flux):
 
     output.plot_graph(transformed_time, period_sum, "Period", "Sum per Period", "Wavelet Transformation - 1-D")
 
-# Using Aaron O'Leary's wavelet package to compute the paul wavelet.
+
 def paul_wav(time, flux):
+    """Using Aaron O'Leary's wavelet package to compute the paul wavelet.
+       Paul wavelet is used in computing the Gradient of the Power Spectrum.
+
+    Args:
+        time (List): Time values from processed data file.
+        flux (List): Flux values from processed data file.
+    """    
     dt = time[1] - time[0]
     # Package implementation
     wa = WaveletAnalysis(data = flux, time = time, wavelet=Paul(), dt=dt)
@@ -248,11 +298,18 @@ def paul_wav(time, flux):
     plt.show()
 
 def GPS(time, frequency, period, power_sum):
+    """Using the Paul wavelet to find the Gradient of the Power Spectrum.
+       
+    Args:
+        time (List): Time values from processed data file.
+        frequency (List): Frequency values found from the Paul wavelet functino.
+        period (List): Periods found in the Paul wavelet function.
+        power_sum (List): Sum of power values.
+    """    
     scale_factor = 0.19
     scale_factor_low = 0.14
     scale_factor_hi = 0.22
 
-    print(len(power_sum))
     # Temporary lists to hold log-adjusted scale.
     temp2 = []
     temp3 = []

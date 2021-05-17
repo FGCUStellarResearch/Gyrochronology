@@ -4,7 +4,21 @@ import algorithms as alg
 import numpy as np
 import sys
 
+'''
+Main driver file. Program begins here. File reading type and algorithm selection are done here.
+
+*** Current implementation may be phased out with implementation of GUI. ***
+'''
+
 def pass_data(file_num, alg_choice = None):
+    """ This function takes the data obtained from the selected menu choices above, and passes them to their respective algorithms.
+    
+    *** Should be phased out after implementing GUI. ***
+
+    Args:
+        file_num (String): The option chosen for number of files selected, either 1, multiple or a test sinusoid is selected. 
+        alg_choice (String, optional): Used in the case of creating a test sinusoid. Algorithm is chosen prior to . Defaults to None.
+    """    
     if file_num == "1":
         time, detrended_flux, background = data_process.get_data()
         # Change values in columns to float values for later processing.
@@ -13,7 +27,7 @@ def pass_data(file_num, alg_choice = None):
         noise = [float(data) for data in background]
         
         while(True):
-            alg_choice = input("Select analysis method: \n1 - Time Series \n2 - Lomb-Scargle \n3 - Autocorrelation \n4 - Wavelets \n5 - GPS\n6 - All\n0 - Exit Program\n")
+            alg_choice = input("Select analysis method: \n1 - Time Series \n2 - Lomb-Scargle \n3 - Autocorrelation \n4 - Morlet Wavelet \n5 - GPS\n6 - All\n0 - Exit Program\n")
 
             alg.selection(time, detrended_flux, alg_choice)
     else:
@@ -24,7 +38,6 @@ def pass_data(file_num, alg_choice = None):
         noise = [float(data) for data in background]
 
         alg.selection(time, detrended_flux, alg_choice)
-
 
 menu = True
 while(menu):
