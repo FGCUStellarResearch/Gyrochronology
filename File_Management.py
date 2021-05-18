@@ -96,8 +96,6 @@ def open_dir():
     files = []
     for entry in os.listdir(root.filename):
         path = root.filename + "/" + entry
-    
-        print(path)
         files.append(path)
     root.destroy()
     return files

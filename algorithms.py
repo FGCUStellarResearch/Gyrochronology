@@ -65,7 +65,6 @@ def selection(time, detrended_flux, algorithm):
         print("This is not a valid selection.")
     data_process.clear_data()
 
-  
 def plotLombScargle(time, flux):
     """Finding the period of the selected data with astropy's Lombscargle package.
     *** Interpolation coefficients and truncated arrays are hardcoded, may need to be altered. ***
@@ -182,13 +181,11 @@ def autoCorr(time, flux):
     lags = lags * del_t
     # Smooth acf curve. 
     kernel_size = np.floor(0.5/np.mean(np.diff(time)))
-    print("kernel_size: ", kernel_size)
     smooth_acf = convolve(acf, Box1DKernel(kernel_size))
     # Find peaks that are in the positive range.
     pks, _ = scipy.signal.find_peaks(smooth_acf, distance = kernel_size)
     
     potential_periods = lags[pks]
-    print("potential periods: ", potential_periods)
     # The first peak (after the smoothing window) will be our period for this data. 
     potential_periods = potential_periods[acf[pks] > 0]
     
@@ -201,10 +198,8 @@ def autoCorr(time, flux):
     
     # Find the max period according to the smooth_acf values.
     max_per = np.max(smooth_acf[index])
-    print("max_per:", max_per)
     # Index of the max period
     period = np.where(smooth_acf == max_per)
-    print("period in acf:", smooth_acf[period])
     # Noise level of acf plot.
     acf_noise = np.std(np.diff(acf))
 
@@ -213,7 +208,6 @@ def autoCorr(time, flux):
     # Values used when creating interpolated values in uncertainty function. 
     interp_coeff = [0.65, 1.30]
     peak_index = period[0][0]
-    print("peak_index:", period[0][0])
     # Call uncertainty function
     plt_text = find_uncertainty(lags , acf, total_time, acf_noise, peak_index, interp_coeff)
 
@@ -264,7 +258,6 @@ def wavelets(time, flux):
     transformed_time = 1./scales_freq
 
     output.plot_graph(transformed_time, period_sum, "Period", "Sum per Period", "Wavelet Transformation - 1-D")
-
 
 def paul_wav(time, flux):
     """Using Aaron O'Leary's wavelet package to compute the paul wavelet.
