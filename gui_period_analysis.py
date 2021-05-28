@@ -24,8 +24,13 @@ To-Do List:
     for a non-copyrighted image. Note: If your code is not running because of an issue with the image, make sure you
     have the image downloaded, and make sure that you are using the correct path as needed throughout the code.
     
-    3. Occasionally blank windows will open if the user runs the program more than once before closing it. I believe
-    this is somehow triggered by an if/else statement but will need to look into it more.
+    3. Running the algorithms more than once produces a variety of errors. In some cases, the data from the last execution
+    will be saved, and the next execution will duplicate the data. In other cases, the algorithm will not run at all a 
+    time due to a variety of data type and input errors. I believe these problems could be solved by implementing a universal
+    data wipe that runs after each execution. 
+
+    4. It would be prudent to allow to save a selected file or directory to allow the user to run different algorithms 
+    individually without having to select the file again. 
 
 Note:
     To fix potential issues that the user could cause to crash the GUI, I made minor edits to my version of
@@ -35,8 +40,8 @@ Note:
 
 # Creates the GUI
 win = tk.Tk()
-# Sets the GUI initial size to the natural pixel dimensions of the background image.
-win.geometry("854x429")
+# **Changed window size to wrap current GUI elements.
+win.geometry("380x150")
 # Sets the initial text for the file selection ComboBox.
 file_choice = tk.StringVar(win)
 file_choice.set("Select")
@@ -73,7 +78,7 @@ def data_op(file_num=None, alg_choice=None):
     """
 
     # Maps the algorithm choices to numbers for compatibility with algorithms.py
-    alg_dict = {'Time Series': '1', 'Lomb-Scargle': '2', 'Autocorrelation': '3', 'Wavelet': '4', 'GPS': '5', 'All': '6'}
+    alg_dict = {'Time Series': '1', 'Lomb-Scargle': '2', 'Autocorrelation': '3', 'Wavelets': '4', 'GPS': '5', 'All': '6'}
 
     # Prevents program from crashing in the event that the user doesn't select properly.
     if file_num is None or file_num == "Select" or alg_choice is None or alg_choice == "Select":
@@ -130,15 +135,15 @@ def data_op(file_num=None, alg_choice=None):
             alg.selection(time, detrended_flux, alg_new)
 
     # This option is not currently functional when used in sequence with a .csv file.
-    # elif file_num == "Test Sinusoid":
-    #     data_process.create_sin()
-    #     time, detrended_flux, background = data_process.get_data()
-    #     time = [float(data) for data in time]
-    #     detrended_flux = [float(data) for data in detrended_flux]
-    #     noise = [float(data) for data in background]
-    #
-    #     alg_choice = alg_dict[alg_choice]
-    #     alg.selection(time, detrended_flux, alg_choice)
+    elif file_num == "Test Sinusoid":
+        data_process.create_sin()
+        time, detrended_flux, background = data_process.get_data()
+        time = [float(data) for data in time]
+        detrended_flux = [float(data) for data in detrended_flux]
+        noise = [float(data) for data in background]
+    
+        alg_choice = alg_dict[alg_choice]
+        alg.selection(time, detrended_flux, alg_choice)
 
 
 def on_enter(event):
@@ -171,26 +176,26 @@ def resize_image(event):
     canvas.create_image(0, 0, image=new_image, anchor='nw')
 
 
-win.title("Gyrochronology GUI")
+win.title("Period Analysis")
 
 # Assigns weights of 0 to all items in the grid so that they do not get stretched when the window changes size.
-for x in range(10):
+for x in range(9):
     Grid.columnconfigure(win, x, weight=0)
 
-for y in range(10):
+for y in range(9):
     Grid.rowconfigure(win, y, weight=0)
 
 # Creates a canvas on which to display the background image and place other widgets.
 canvas = tk.Canvas(win, width=win.winfo_screenwidth(), height=win.winfo_screenheight(), highlightthickness=0)
-canvas.create_image(0, 0, image=photo, anchor='nw')
-canvas.place(x=0, y=0)
+#canvas.create_image(0, 0, image=photo, anchor='nw')
+#canvas.place(x=0, y=0)
 
 # Fixes a bug in which a shrunken background image appears in the top left corner of the program window.
 win.update()
 
 # This text should probably be changed, I was unsure of the proper name for this program.
 label1 = tk.Label(win, text="Welcome to the Gyrochronology GUI", justify='center')
-label1.grid(row=0, column=1)
+label1.grid(row=0, column=1, sticky = "")
 label1['bg'] = win['bg']
 
 dropDownFileLabel = tk.Label(win, text='Choose File or Folder: ')
@@ -198,8 +203,8 @@ dropDownFileLabel.grid(row=1, column=1, sticky='nw')
 
 dropDownFiler = ttk.Combobox(win, textvariable=file_choice, state='readonly')
 dropDownFiler['values'] = ('Single File', 'Multiple Files',
-                           # 'Test Sinusoid')
-                           )
+                        'Test Sinusoid')
+                           
 
 # Prevents the selected option from staying highlighted
 dropDownFiler.bind("<<ComboboxSelected>>", lambda f: win.focus())
