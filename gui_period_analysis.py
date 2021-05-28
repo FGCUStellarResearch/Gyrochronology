@@ -29,7 +29,8 @@ To-Do List:
 
 Note:
     To fix potential issues that the user could cause to crash the GUI, I made minor edits to my version of
-    File_Management.py that are probably worth making to the repo version as well.
+    File_Management.py that are probably worth making to the repo version as well. Also, we may want to add
+    PIL as a dependency if we end up using a background image.
 '''
 
 # Creates the GUI
