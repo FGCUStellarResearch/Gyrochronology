@@ -4,55 +4,37 @@ import algorithms as alg
 import tkinter as tk
 from tkinter import filedialog, messagebox, Grid, ttk
 import tkinter.font as tkFont
-from PIL import Image, ImageTk
 
 '''
 This code effectively replaces period_analysis.py with a GUI version of the same code with the same functionality.
-
 To-Do List:
-    1. The test sinusoid functionality is problematic with this codeset. If the user passes the test sinusoid to any
-    algorithm, and then tries to pass a .csv file to an algorithm, the program crashes. However, if the user passes the
-    test sinusoid and then passes a .fits file, everything is fine, and the user may even pass a .csv file in after
-    this. The issue seems to lie in data_process.read_csv_data when it is being called by File_Management.read_csv.
-    That said, if the test sinusoid was only a tool to test code, then this issue is unnecessary to solve. The sinusoid
-    also causes a datatype issue where it becomes an np.ndarray instead of a list, and therefore does not have access
-    to .clear(), crashing the program in data_process.clear_data(). I made a small edit to my version of data_process
-    to solve this.
 
-    2. The GUI is a bit of an eyesore, so that could use some work. Additionally, I am not sure if a background image
-    is what we want for the GUI, or if we want something else instead. If we go for an image, it would be smart to go
-    for a non-copyrighted image. Note: If your code is not running because of an issue with the image, make sure you
-    have the image downloaded, and make sure that you are using the correct path as needed throughout the code.
-    
-    3. Running the algorithms more than once produces a variety of errors. In some cases, the data from the last execution
+    1. Running the algorithms more than once produces a variety of errors. In some cases, the data from the last execution
     will be saved, and the next execution will duplicate the data. In other cases, the algorithm will not run at all a 
     time due to a variety of data type and input errors. I believe these problems could be solved by implementing a universal
     data wipe that runs after each execution. 
-
-    4. It would be prudent to allow to save a selected file or directory to allow the user to run different algorithms 
-    individually without having to select the file again. 
-
+ 
 Note:
     To fix potential issues that the user could cause to crash the GUI, I made minor edits to my version of
-    File_Management.py that are probably worth making to the repo version as well. Also, we may want to add
-    PIL as a dependency if we end up using a background image.
+    File_Management.py that are probably worth making to the repo version as well.
 '''
 
 # Creates the GUI
 win = tk.Tk()
 # **Changed window size to wrap current GUI elements.
-win.geometry("380x150")
+win.geometry("380x200")
 # Sets the initial text for the file selection ComboBox.
 file_choice = tk.StringVar(win)
 file_choice.set("Select")
 # Sets the initial text for the algorithm selection ComboBox.
 algorithm_choice = tk.StringVar(win)
 algorithm_choice.set("Select")
+# Creates an array to store the user's chosen files.
 files = []
-# Creates the font for the executeMe button
+# Creates the font for the executeMe and chooseFiles buttons.
 font = tkFont.Font(family="Lithos Pro", size=12)
-# Stores the background image. This is possibly an unnecessary feature for the program and the image may be copyrighted.
-photo = ImageTk.PhotoImage(file='1613768_night-sky-png-meteor-stars-night-sky-meteorday.png')
+# Creates the font for the files names. This can be changed if the text is deemed to be too small or too big.
+font2 = tkFont.Font(family="Lithos Pro", size=6)
 
 
 def file_picker():
@@ -62,27 +44,21 @@ def file_picker():
     filename = filedialog.askopenfilename(initialdir="/", title="Select a File",
                                           filetypes=[("Data Files", "*.csv"), ("Data Files", "*.fits")])
     files.clear()
+    canvas.delete('all')
     files.append(filename)
 
 
-def data_op(file_num=None, alg_choice=None):
-    """ This function takes in a file/s and an algorithm, and passes the given file data to the chosen algorithm.
-
-    Note: each of these parameters are optional in the event that the user does not select a choice from either of their
-    respective ComboBoxes, however if either is left as None this function will exit itself.
-
+def file_selection(file_num):
+    """ This function allows the user to choose a file, and stores the chosen file so that the user may pass the file
+    data to multiple algorithms without continually selecting the file.
     Args:
-        file_num (String): the file chosen by the user. Either single or multiple files, or a test sinusoid.
-        alg_choice (String): the user's chosen algorithm.
-
+         file_num (String): the file chosen by the user. Either single or multiple files, or a test sinusoid.
     """
 
-    # Maps the algorithm choices to numbers for compatibility with algorithms.py
-    alg_dict = {'Time Series': '1', 'Lomb-Scargle': '2', 'Autocorrelation': '3', 'Wavelets': '4', 'GPS': '5', 'All': '6'}
-
     # Prevents program from crashing in the event that the user doesn't select properly.
-    if file_num is None or file_num == "Select" or alg_choice is None or alg_choice == "Select":
-        tk.messagebox.showinfo("Error", "Please select both a file/folder and an algorithm")
+    if file_num == "Select" or file_num is None:
+        tk.messagebox.showinfo("Error", "Error: Please Choose a File Option")
+        return
 
     elif file_num == "Single File":
         file_picker()
@@ -93,18 +69,9 @@ def data_op(file_num=None, alg_choice=None):
             return
 
         else:
-            File_Management.read_input_file(files[0])
+            canvas.create_text(10, 125, text=files[0], font=font2, anchor='nw')
 
-        time, detrended_flux, background = data_process.get_data()
-        time = [float(data) for data in time]
-        detrended_flux = [float(data) for data in detrended_flux]
-        noise = [float(data) for data in background]
-
-        alg_choice = alg_dict[alg_choice]
-
-        alg.selection(time, detrended_flux, alg_choice)
-
-    elif file_num == "Multiple Files":
+    if file_num == "Multiple Files":
         folder = File_Management.open_dir()
 
         # Prevents program from crashing in the event that the user closes the file selection window.
@@ -117,9 +84,61 @@ def data_op(file_num=None, alg_choice=None):
             tk.messagebox.showinfo("Error", "Error: Folder is Empty")
             return
 
+        # Adds the paths to the selected files to the canvas, and stores them in files[].
+        else:
+            canvas.delete('all')
+            label_height = 125
+            for x in range(0, len(folder)):
+                if not (folder[x].endswith('.csv') or folder[x].endswith('.fits')):
+                    continue
+                else:
+                    files.append(folder[x])
+                    canvas.create_text(10, label_height, text=folder[x], font=font2, anchor='nw')
+                    label_height += 15
+
+
+def data_op(file_num=None, alg_choice=None):
+    """ This function takes in a file/s and an algorithm, and passes the given file data to the chosen algorithm.
+    Note: each of these parameters are optional in the event that the user does not select a choice from either of their
+    respective ComboBoxes, however if either is left as None this function will exit itself.
+    Args:
+        file_num (String): the amount of files chosen by the user. Either single or multiple files, or a test sinusoid.
+        alg_choice (String): the user's chosen algorithm.
+    """
+
+    # Maps the algorithm choices to numbers for compatibility with algorithms.py
+    alg_dict = {'Time Series': '1', 'Lomb-Scargle': '2', 'Autocorrelation': '3', 'Wavelets': '4', 'GPS': '5',
+                'All': '6'}
+
+    # Prevents program from crashing in the event that the user doesn't select properly.
+    if file_num is None or file_num == "Select" or alg_choice is None or alg_choice == "Select":
+        tk.messagebox.showinfo("Error", "Please select both a file/folder and an algorithm")
+
+    elif file_num == "Single File":
+
+        # Prevents program from crashing in the event that the user closes the file selection window.
+        if files[0] == "" or files[0] is None:
+            tk.messagebox.showinfo("Error", "Error: No Files Selected")
+            return
+
+        else:
+            print(files[0])
+            File_Management.read_input_file(files[0])
+
+        time, detrended_flux, background = data_process.get_data()
+        time = [float(data) for data in time]
+        detrended_flux = [float(data) for data in detrended_flux]
+        noise = [float(data) for data in background]
+
+        alg_choice = alg_dict[alg_choice]
+
+        alg.selection(time, detrended_flux, alg_choice)
+
+    elif file_num == "Multiple Files":
+
         # Iterates through the files in the selected folder and passes each one through the chosen algorithm.
         # One potential issue with this is if the user intends to pass files through different algorithms.
-        for path in folder:
+        for path in files:
             # Prevents program from crashing in the event that the user chooses a folder containing bad file types.
             if not (path.endswith('.csv') or path.endswith('.fits')):
                 continue
@@ -141,12 +160,12 @@ def data_op(file_num=None, alg_choice=None):
         time = [float(data) for data in time]
         detrended_flux = [float(data) for data in detrended_flux]
         noise = [float(data) for data in background]
-    
+
         alg_choice = alg_dict[alg_choice]
         alg.selection(time, detrended_flux, alg_choice)
 
 
-def on_enter(event):
+def exec_on_enter(event):
     """This function changes the color of the executeMe button when the user hovers over it.
     Args:
         event (tkinter.Event): automatically passed when the user's mouse enters the button's coordinates.
@@ -155,7 +174,7 @@ def on_enter(event):
     executeMe.config(background='black', foreground="white")
 
 
-def on_leave(event):
+def exec_on_leave(event):
     """This function reverts the color of the executeMe button when the users stops hovering over it.
     Args:
         event (tkinter.Event): automatically passed when the user's mouse exits the button's coordinates.
@@ -163,48 +182,47 @@ def on_leave(event):
     executeMe.config(background='SystemButtonFace', foreground='black')
 
 
-def resize_image(event):
-    """This function resizes the background image when the window size changes.
+def choose_on_enter(event):
+    """This function changes the color of the chooseFiles button when the user hovers over it.
     Args:
-        event (tkinter.Event): automatically passed when the user's resizes the program window.
+        event (tkinter.Event): automatically passed when the user's mouse enters the button's coordinates.
     """
-    global image, resized_image, new_image
-    image = Image.open('1613768_night-sky-png-meteor-stars-night-sky-meteorday.png')
-    # "unresolved attribute reference" for .width & .height can be ignored. This only displays due to the pydoc comment.
-    resized_image = image.resize((event.width, event.height), Image.ANTIALIAS)
-    new_image = ImageTk.PhotoImage(resized_image)
-    canvas.create_image(0, 0, image=new_image, anchor='nw')
+
+    chooseFiles.config(background='black', foreground="white")
 
 
+def choose_on_leave(event):
+    """This function reverts the color of the chooseFiles button when the users stops hovering over it.
+    Args:
+        event (tkinter.Event): automatically passed when the user's mouse exits the button's coordinates.
+    """
+    chooseFiles.config(background='SystemButtonFace', foreground='black')
+
+
+# Gives a title to the GUI window
 win.title("Period Analysis")
 
+# Creates a canvas on which to display the file paths.
+canvas = tk.Canvas(win)
+canvas.place(x=0, y=0)
+
 # Assigns weights of 0 to all items in the grid so that they do not get stretched when the window changes size.
-for x in range(9):
+for x in range(5):
     Grid.columnconfigure(win, x, weight=0)
 
-for y in range(9):
+for y in range(5):
     Grid.rowconfigure(win, y, weight=0)
-
-# Creates a canvas on which to display the background image and place other widgets.
-canvas = tk.Canvas(win, width=win.winfo_screenwidth(), height=win.winfo_screenheight(), highlightthickness=0)
-#canvas.create_image(0, 0, image=photo, anchor='nw')
-#canvas.place(x=0, y=0)
-
-# Fixes a bug in which a shrunken background image appears in the top left corner of the program window.
-win.update()
 
 # This text should probably be changed, I was unsure of the proper name for this program.
 label1 = tk.Label(win, text="Welcome to the Gyrochronology GUI", justify='center')
-label1.grid(row=0, column=1, sticky = "")
-label1['bg'] = win['bg']
+label1.grid(row=0, column=1, sticky="")
 
 dropDownFileLabel = tk.Label(win, text='Choose File or Folder: ')
 dropDownFileLabel.grid(row=1, column=1, sticky='nw')
 
 dropDownFiler = ttk.Combobox(win, textvariable=file_choice, state='readonly')
 dropDownFiler['values'] = ('Single File', 'Multiple Files',
-                        'Test Sinusoid')
-                           
+                           'Test Sinusoid')
 
 # Prevents the selected option from staying highlighted
 dropDownFiler.bind("<<ComboboxSelected>>", lambda f: win.focus())
@@ -220,15 +238,24 @@ dropDown['values'] = ('Time Series', 'Lomb-Scargle', 'Autocorrelation', 'Wavelet
 dropDown.bind("<<ComboboxSelected>>", lambda f: win.focus())
 dropDown.grid(row=2, column=2, sticky='nw')
 
+# Choose File/s
+chooseFiles = tk.Button(win, font=font, text='Choose File/s', bd=1,
+                        command=lambda: [file_selection(dropDownFiler.get())])
+
+# Binds the on_enter and on_leave functions to the chooseFiles button
+chooseFiles.bind('<Enter>', choose_on_enter)
+chooseFiles.bind('<Leave>', choose_on_leave)
+chooseFiles.grid(row=3, column=1, pady=5)
+
 # Creates the executeMe button and executes the data_op function if it is clicked.
 executeMe = tk.Button(win, font=font, text='Execute', bd=1, command=lambda: [data_op(dropDownFiler.get(),
                                                                                      dropDown.get())])
 # Binds the on_enter and on_leave functions to the executeMe button
-executeMe.bind('<Enter>', on_enter)
-executeMe.bind('<Leave>', on_leave)
-executeMe.grid(row=3, column=1, pady=5)
+executeMe.bind('<Enter>', exec_on_enter)
+executeMe.bind('<Leave>', exec_on_leave)
+executeMe.grid(row=3, column=2, pady=5)
 
-# Binds the resize_image function to the program.
-win.bind('<Configure>', resize_image)
+chosenFiles = tk.Label(win, text='Selected Files:')
+chosenFiles.grid(row=4, column=1, sticky='nw')
 
 win.mainloop()
