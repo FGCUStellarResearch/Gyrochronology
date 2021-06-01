@@ -93,6 +93,9 @@ def open_dir():
     root = Tk()
     root.filename = filedialog.askdirectory()
     
+    if root.filename is None or root.filename == "":
+        return
+    
     files = []
     for entry in os.listdir(root.filename):
         path = root.filename + "/" + entry
