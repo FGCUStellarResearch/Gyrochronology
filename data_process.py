@@ -35,6 +35,10 @@ def clean_tess():
     
     #Index of zero values, used to find gap in TESS data.
     nan_idx = np.argwhere(np.asarray(time) == 0)
+    
+    # Assures that values in time[] are numeric
+    time = list(map(float, time))
+    
     # Taking the most frequent spacing value, excluding the values that are zero.
     time_mode = sp.stats.mode(np.diff(np.delete(time, nan_idx)), axis=None)[0]
 
