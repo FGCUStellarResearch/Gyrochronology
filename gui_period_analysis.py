@@ -115,9 +115,14 @@ def data_op(file_num=None, alg_choice=None):
         tk.messagebox.showinfo("Error", "Please select both a file/folder and an algorithm")
 
     elif file_num == "Single File":
-
+        
         # Prevents program from crashing in the event that the user closes the file selection window.
-        if files[0] == "" or files[0] is None:
+        if not files:
+            tk.messagebox.showinfo("Error", "Error: No Files Selected")
+            return
+        
+        # Also prevents program from crashing in the event that the user closes the file selection window.
+        elif files[0] == "" or files[0] is None:
             tk.messagebox.showinfo("Error", "Error: No Files Selected")
             return
 
