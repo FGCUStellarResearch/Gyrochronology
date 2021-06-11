@@ -184,7 +184,7 @@ def exec_on_leave(event):
     Args:
         event (tkinter.Event): automatically passed when the user's mouse exits the button's coordinates.
     """
-    executeMe.config(background='SystemButtonFace', foreground='black')
+    executeMe.config(background='lightgray', foreground='black')
 
 
 def choose_on_enter(event):
@@ -201,7 +201,7 @@ def choose_on_leave(event):
     Args:
         event (tkinter.Event): automatically passed when the user's mouse exits the button's coordinates.
     """
-    chooseFiles.config(background='SystemButtonFace', foreground='black')
+    chooseFiles.config(background='lightgray', foreground='black')
 
 
 # Gives a title to the GUI window
