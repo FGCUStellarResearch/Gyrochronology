@@ -60,10 +60,10 @@ def clean_k2():
 
     nan_idx = np.argwhere(np.isnan(raw_flux))
 
-    time =  np.delete(time, nan_idx)
-    raw_flux = np.delete(raw_flux, nan_idx)
+    time = list(np.delete(time, nan_idx))
+    raw_flux = list(np.delete(raw_flux, nan_idx))
 
-    detrended_flux = signal.detrend(raw_flux)
+    detrended_flux = list(signal.detrend(raw_flux))
 
 def read_csv_data(csv_file):
     """Data collection from a csv file. Currently only implemented for 
