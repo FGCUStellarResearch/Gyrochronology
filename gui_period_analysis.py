@@ -219,7 +219,7 @@ for y in range(5):
     Grid.rowconfigure(win, y, weight=0)
 
 # This text should probably be changed, I was unsure of the proper name for this program.
-label1 = tk.Label(win, text="Welcome to the Gyrochronology GUI", justify='center')
+label1 = tk.Label(win, text="Welcome to the Period Analysis GUI", justify='center')
 label1.grid(row=0, column=1, sticky="")
 
 dropDownFileLabel = tk.Label(win, text='Choose File or Folder: ')
