@@ -299,7 +299,7 @@ def GPS(time, frequency, period, power_sum):
         period (List): Periods found in the Paul wavelet function.
         power_sum (List): Sum of power values.
     """    
-    scale_factor = 0.19
+    # scale_factor = 0.19
     scale_factor_low = 0.14
     scale_factor_hi = 0.22
 
@@ -312,6 +312,13 @@ def GPS(time, frequency, period, power_sum):
         temp3.append(np.log(frequency[i]) - np.log(frequency[i-1]))
     
     gps_vals = 1-np.divide(temp2, temp3)
+    
+    scale_factor = np.polyval([0.0002, -0.0036, 0.0251, -0.0580, -0.0323, 0.3868], period[np.argmax(gps_vals)])
+
+    print("Scale Factor: " + str(scale_factor))
+    print("Maximum of gps_vals: " + str(np.max(gps_vals)))
+    print("Rotational Period: " + str(np.max(gps_vals)/scale_factor))
+    
     period_vals = np.divide(period[1:], scale_factor)
     plt.plot(period_vals,gps_vals)
     plt.show()
