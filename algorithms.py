@@ -313,11 +313,14 @@ def GPS(time, frequency, period, power_sum):
     
     gps_vals = 1-np.divide(temp2, temp3)
     
-    scale_factor = np.polyval([0.0002, -0.0036, 0.0251, -0.0580, -0.0323, 0.3868], period[np.argmax(gps_vals)])
+    scale_factor = np.polyval([-0.0017, 0.0258, -0.1362, 0.4218], period[np.argmax(gps_vals)])
+    
+    if scale_factor < 0.17:
+        scale_factor = 0.17
 
+    print("PGPS: " + str(period[np.argmax(gps_vals)]))
     print("Scale Factor: " + str(scale_factor))
-    print("Maximum of gps_vals: " + str(np.max(gps_vals)))
-    print("Rotational Period: " + str(np.max(gps_vals)/scale_factor))
+    print("Rotational Period: " + str(period[np.argmax(gps_vals)] / scale_factor))
     
     period_vals = np.divide(period[1:], scale_factor)
     plt.plot(period_vals,gps_vals)
