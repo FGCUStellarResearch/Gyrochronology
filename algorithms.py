@@ -54,7 +54,9 @@ def selection(time, detrended_flux, algorithm):
         wavelets(time, detrended_flux)
     elif(algorithm == "5"):
         paul_wav(time, np.asarray(detrended_flux))
-    elif(algorithm == "6"):
+    elif (algorithm == "6"):
+        faster_wavelets(time, detrended_flux)
+    elif(algorithm == "7"):
         output.plot_graph(time, detrended_flux)
         plotLombScargle(time, detrended_flux)
         autoCorr(time, detrended_flux)
@@ -303,6 +305,8 @@ def GPS(time, frequency, period, power_sum):
     scale_factor_low = 0.14
     scale_factor_hi = 0.22
 
+    tot_time = np.max(time) - np.min(time)
+    
     # Temporary lists to hold log-adjusted scale.
     temp2 = []
     temp3 = []
@@ -324,9 +328,76 @@ def GPS(time, frequency, period, power_sum):
     
     period_vals = np.divide(period[1:], scale_factor)
     plt.plot(period_vals,gps_vals)
+    
+    box = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    plt.text(5, 5, "Rotational Period: " + str(period[np.argmax(gps_vals)] / scale_factor), bbox=box)
+
+    noise=np.std(np.diff(gps_vals))
+    interp_coeff = [0.5,2]
+    plt_text = find_uncertainty(period_vals, gps_vals, tot_time, noise, np.argmax(gps_vals), interp_coeff)
+    plt.text(10, 2, plt_text, bbox=box)
+    
     plt.show()
 
     tot_len_ts = np.max(time) - np.min(time)
     aa = np.max(gps_vals[period_vals<0.5*tot_len_ts])
     print(aa)
+    
+    
+def faster_wavelets(time, flux):
+    """Using Aaron O'Leary's wavelet package to compute the Morlet wavelet.
+
+    Args:
+        time (List): Time values from processed data file.
+        flux (List): Flux values from processed data file.
+    """
+    flux = flux / np.median(flux) - 1
+    flux = flux / np.std(np.diff(flux))
+
+    tot_time = np.max(time) - np.min(time)
+
+    # Convert time to np array for scaleogram.
+    time = np.asarray(time)
+
+    dt = time[1] - time[0]
+    # Package implementation
+    wa = WaveletAnalysis(data=flux, time=time, wavelet=Morlet(), dt=dt)
+    power = wa.wavelet_power
+    scales = wa.scales
+    periods = wa.fourier_periods
+    frequencies = wa.fourier_frequencies
+
+    t = wa.time
+
+    plt.plot(scales, np.sum(power, axis=1))
+    box = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    idx = unif2D(power.astype(float), size=7, mode='constant').argmax()
+
+    holder = 0
+    holder_sum = 0
+    power_sum = []
+    for i in range(0, len(scales)):
+        power_sum.append(power[i].sum())
+        if power[i].sum() > holder_sum:
+            holder_sum = power[i].sum()
+            holder = i
+
+    # plt.text(5, 5, "Rotational Period: " + str(scales[holder]), bbox=box)
+    noise = np.std(np.diff(power_sum))
+    noise = noise * math.sqrt(len(t))
+    interp_coeff = [0.5, 2]
+    # power = power.flatten()
+
+    # Finds lower and upper uncertainties. Values are saved and placed on the plot.
+    plt_text = find_uncertainty(scales, power_sum, tot_time, noise, holder, interp_coeff)
+    plt.text(5,5,plt_text, bbox=box)
+    plt.show()
+
+    # Plotting wavelet results on 2D map.
+    fig, ax = plt.subplots()
+    T, S = np.meshgrid(t, scales)
+
+    ax.contourf(T, S, power, 100)
+    # ax.set_yscale('log')
+    plt.show()
     
