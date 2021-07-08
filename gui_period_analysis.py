@@ -108,7 +108,7 @@ def data_op(file_num=None, alg_choice=None):
 
     # Maps the algorithm choices to numbers for compatibility with algorithms.py
     alg_dict = {'Time Series': '1', 'Lomb-Scargle': '2', 'Autocorrelation': '3', 'Wavelets': '4', 'GPS': '5',
-                'All': '6'}
+                'Faster Wavelets': '6', 'All': '7'}
 
     # Prevents program from crashing in the event that the user doesn't select properly.
     if file_num is None or file_num == "Select" or alg_choice is None or alg_choice == "Select":
@@ -237,7 +237,7 @@ dropDownLabel = tk.Label(win, text='Choose Algorithm:')
 dropDownLabel.grid(row=2, column=1, sticky='nw')
 
 dropDown = ttk.Combobox(win, textvariable=algorithm_choice, state='readonly')
-dropDown['values'] = ('Time Series', 'Lomb-Scargle', 'Autocorrelation', 'Wavelets', 'GPS', 'All')
+dropDown['values'] = ('Time Series', 'Lomb-Scargle', 'Autocorrelation', 'Wavelets', 'GPS', 'Faster Wavelets', 'All')
 
 # Prevents the selected option from staying highlighted
 dropDown.bind("<<ComboboxSelected>>", lambda f: win.focus())
