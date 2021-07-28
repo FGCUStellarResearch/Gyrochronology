@@ -159,6 +159,69 @@ def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
     plt_text = 'Period = {:.5f}\nUncertainty\n+ {:.5f}\n- {:.5f}'.format(max(1/max_freq, max_freq), ls_upp_err, ls_low_err)
     return plt_text
 
+
+def find_wavelet_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
+    """Performs same function as above however this fixes an issue with the second to last line
+    that would find and report the incorrect maximum value.
+
+    Args:
+        frequency (List): x-value of periodogram data.
+        power (List): y-value of periodogram data.
+        tot_time (Float): The total length of the data.
+        noise (Float): Standard deviation of the difference between values along the y-axis.
+        period_idx (Integer): Index of the peak period.
+        coeffs (List): Values used to interpolate the periodogram data. Interpolation needed to
+                       move along the peak.
+
+    Returns:
+        [String]: String containing the peak value, and the uncertainty window.
+                  Used to display in plotted graph.
+    """
+
+    # Finding the index with the most frequent period.
+    max_freq = frequency[period_idx]
+    # Create new frequency list with interpolated power values to find the first value more than one noise level below.
+    freq_low = coeffs[0] * max_freq
+    freq_high = coeffs[1] * max_freq
+    freq_step = (freq_high - freq_low) / 100
+    new_freq = np.arange(freq_low, freq_high, freq_step)
+
+    # Create object to interpolate power values from created frequency values.
+    pchip_obj = scipy.interpolate.PchipInterpolator(frequency, power)
+    new_power = pchip_obj(new_freq)
+
+    # Index of the maximum power value inside new_power
+    new_peak = np.where(new_power == np.max(new_power))[0][0]
+    # Split frequencies into upper and lower ranges to identify higher and lower uncertainties.
+    upper_pow = new_power[new_peak:]
+    lower_pow = new_power[1:new_peak]
+
+    # Values that are less than one noise level below the peak.
+    lower_vals = np.where(lower_pow < power[period_idx] - noise)
+    upper_vals = new_peak + np.argmax(upper_pow < power[period_idx] - noise)
+
+    # Check to see if either arrays are empty. If they are, replace with the maximum frequency value.
+    if (lower_vals[0].size == 0):
+        f_min = int(np.max(new_freq))
+    else:
+        f_min = np.max(lower_vals)
+    if (upper_vals.size == 0):
+        f_max = int(np.max(new_freq))
+    else:
+        f_max = new_peak + np.argmax(upper_pow < power[period_idx] - noise)
+
+    min_period = 1 / new_freq[f_max]
+    max_period = 1 / new_freq[f_min]
+    upp_err = max_period - 1 / max_freq
+    low_err = (1 / max_freq) - min_period
+    ls_upp_err = np.fmax(1 / tot_time, upp_err)
+    ls_low_err = np.fmax(1 / tot_time, low_err)
+    # Use max to differentiate between autocorrelation lag value, or lombscargle freqency value.
+    plt_text = 'Period = {:.5f}\nUncertainty\n+ {:.5f}\n- {:.5f}'.format(max_freq, ls_upp_err,
+                                                                         ls_low_err)
+    return plt_text
+
+
 def autoCorr(time, flux):
     """Using autocorrelation function from MatPlotLib to find period.
 
@@ -384,7 +447,8 @@ def faster_wavelets(time, flux):
 
     # plt.text(5, 5, "Rotational Period: " + str(scales[holder]), bbox=box)
     noise = np.std(np.diff(power_sum))
-    noise = noise * math.sqrt(len(t))
+    
+    # This coefficient can be tweaked. I'm not really certain what it does. - Jake
     interp_coeff = [0.5, 2]
     # power = power.flatten()
 
