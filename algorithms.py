@@ -220,6 +220,67 @@ def find_wavelet_uncertainty(frequency, power, tot_time, noise, period_idx, coef
     return plt_text
 
 
+def find_gps_uncertainty(frequency, power, tot_time, noise, max_freq, coeffs):
+    """Method to find uncertainty for the autocorrelation function and Lomb-Scargle Periodogram.
+    Starting from the peak, we move 1 noise level down to the left and right of the peak.
+    How far the value moves along the x-axis after this noise "adjustment" corresponds to the uncertainty.
+
+    Args:
+        frequency (List): x-value of periodogram data. Lags in autocorrelation, Frequency in LS.
+        power (List): y-value of periodogram data. ACF for autocorrelation, Power in LS.
+        tot_time (Float): The total length of the data.
+        noise (Float): Standard deviation of the difference between values along the y-axis.
+        max_freq (Float): Rotational period found by the GPS() function.
+        coeffs (List): Values used to interpolate the periodogram data. Interpolation needed to
+                       move along the peak.
+
+    Returns:
+        [String]: String containing the peak value, and the uncertainty window.
+                  Used to display in plotted graph.
+    """
+
+    # Create new frequency list with interpolated power values to find the first value more than one noise level below.
+    freq_low = coeffs[0] * max_freq
+    freq_high = coeffs[1] * max_freq
+    freq_step = (freq_high - freq_low) / 100
+    new_freq = np.arange(freq_low, freq_high, freq_step)
+
+    # Create object to interpolate power values from created frequency values.
+    pchip_obj = scipy.interpolate.PchipInterpolator(frequency, power)
+    new_power = pchip_obj(new_freq)
+
+    # Index of the maximum power value inside new_power
+    new_peak = np.where(new_power == np.max(new_power))[0][0]
+    # Split frequencies into upper and lower ranges to identify higher and lower uncertainties.
+    upper_pow = new_power[new_peak:]
+    lower_pow = new_power[1:new_peak]
+
+    # Values that are less than one noise level below the peak.
+    lower_vals = np.where(lower_pow < max_freq - noise)
+    upper_vals = new_peak + np.argmax(upper_pow < max_freq - noise)
+
+    # Check to see if either arrays are empty. If they are, replace with the maximum frequency value.
+    if (lower_vals[0].size == 0):
+        f_min = int(np.max(new_freq))
+    else:
+        f_min = np.max(lower_vals)
+    if (upper_vals.size == 0):
+        f_max = int(np.max(new_freq))
+    else:
+        f_max = new_peak + np.argmax(upper_pow < max_freq - noise)
+
+    min_period = 1 / new_freq[f_max]
+    max_period = 1 / new_freq[f_min]
+    upp_err = max_period - 1 / max_freq
+    low_err = (1 / max_freq) - min_period
+    ls_upp_err = np.fmax(1 / tot_time, upp_err)
+    ls_low_err = np.fmax(1 / tot_time, low_err)
+    # Use max to differentiate between autocorrelation lag value, or lombscargle freqency value.
+    plt_text = 'Period = {:.5f}\nUncertainty\n+ {:.5f}\n- {:.5f}'.format(max_freq, ls_upp_err,
+                                                                         ls_low_err)
+    return plt_text
+
+
 def autoCorr(time, flux):
     """Using autocorrelation function from MatPlotLib to find period.
 
@@ -402,7 +463,7 @@ def GPS(time, frequency, period, power_sum):
     interp_coeff = [0.5,2]
     
     # Add peak and uncertainty onto the plot.
-    plt_text = find_uncertainty(period_vals, gps_vals, tot_time, noise, np.argmax(gps_vals), interp_coeff)
+    plt_text = find_gps_uncertainty(period_vals, gps_vals, tot_time, noise, np.argmax(gps_vals), interp_coeff)
     plt.text(10, 2, plt_text, bbox=box)
     
     plt.show()
