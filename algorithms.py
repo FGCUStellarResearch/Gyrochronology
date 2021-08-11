@@ -29,7 +29,6 @@ Implementation of the period finding algorithms.
 
 To-Do:
     - Verify uncertainty implementation and accuracy.
-    - GPS displays incorrect period on graph.
     - Fix windowing on output graphs. Properly show the peak, as well as uncertainty window.
     - Continue testing on different fits files.
 '''
