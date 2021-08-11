@@ -28,16 +28,14 @@ Implementation of the period finding algorithms.
 - Gradient of the Power Spectrum (using Paul Wavelet)
 
 To-Do:
-    - Convert command line interface to GUI
-    - Optimize wavelet function - runs too slowly. (change package?)
     - Verify uncertainty implementation and accuracy.
-    - GPS/Paul unfinished?
+    - GPS displays incorrect period on graph.
     - Fix windowing on output graphs. Properly show the peak, as well as uncertainty window.
     - Continue testing on different fits files.
 '''
 
 def selection(time, detrended_flux, algorithm):
-    """Read menu selection, and call respsective algorithm.
+    """Read menu selection, and call respective algorithm.
 
     Args:
         time (List): Time values taken from processed data file.
@@ -356,11 +354,14 @@ def paul_wav(time, flux):
     plt.show()
 
 def GPS(time, frequency, period, power_sum):
-    """Using the Paul wavelet to find the Gradient of the Power Spectrum.
+    """ Using the Paul wavelet to find the Gradient of the Power Spectrum.
+        Current problem: given our calculation of period using the alpha value, 
+        the period we find is not the peak of the graph. The period is printed to
+        the console, but the period shown on the graph is incorrect.
        
     Args:
         time (List): Time values from processed data file.
-        frequency (List): Frequency values found from the Paul wavelet functino.
+        frequency (List): Frequency values found from the Paul wavelet function.
         period (List): Periods found in the Paul wavelet function.
         power_sum (List): Sum of power values.
     """    
@@ -380,8 +381,10 @@ def GPS(time, frequency, period, power_sum):
     
     gps_vals = 1-np.divide(temp2, temp3)
     
+    # Set scale factor (AKA alpha value)
     scale_factor = np.polyval([-0.0017, 0.0258, -0.1362, 0.4218], period[np.argmax(gps_vals)])
     
+    # Sets a minimum value for scale_factor of 0.14
     if scale_factor < 0.17:
         scale_factor = 0.17
 
@@ -393,18 +396,20 @@ def GPS(time, frequency, period, power_sum):
     plt.plot(period_vals,gps_vals)
     
     box = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-    plt.text(5, 5, "Rotational Period: " + str(period[np.argmax(gps_vals)] / scale_factor), bbox=box)
+    # plt.text(5, 5, "Rotational Period: " + str(period[np.argmax(gps_vals)] / scale_factor), bbox=box)
 
     noise=np.std(np.diff(gps_vals))
     interp_coeff = [0.5,2]
+    
+    # Add peak and uncertainty onto the plot.
     plt_text = find_uncertainty(period_vals, gps_vals, tot_time, noise, np.argmax(gps_vals), interp_coeff)
     plt.text(10, 2, plt_text, bbox=box)
     
     plt.show()
 
-    tot_len_ts = np.max(time) - np.min(time)
-    aa = np.max(gps_vals[period_vals<0.5*tot_len_ts])
-    print(aa)
+    # tot_len_ts = np.max(time) - np.min(time)
+    # aa = np.max(gps_vals[period_vals<0.5*tot_len_ts])
+    # print(aa)
     
     
 def faster_wavelets(time, flux):
@@ -439,6 +444,10 @@ def faster_wavelets(time, flux):
     holder = 0
     holder_sum = 0
     power_sum = []
+    
+    ''' Collapse power values into a single value
+        Possibly worth taking the mean instead of the sum.
+    '''
     for i in range(0, len(scales)):
         power_sum.append(power[i].sum())
         if power[i].sum() > holder_sum:
