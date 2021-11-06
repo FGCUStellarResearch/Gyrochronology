@@ -2,7 +2,7 @@ import data_process
 import File_Management
 import algorithms as alg
 import tkinter as tk
-from tkinter import filedialog, messagebox, Grid, ttk
+from tkinter import filedialog, Grid, ttk
 import tkinter.font as tkFont
 
 '''
@@ -38,14 +38,26 @@ font2 = tkFont.Font(family="Lithos Pro", size=6)
 
 
 def file_picker():
-    """This function stores the name/s of a file selected and stores it/them to the files[] array.
+    """This function stores the name of a file selected and stores it to the files[] array.
     """
+    files.clear()
     # Limits file types to .csv and fits. If we want to add excel or other compatibility, change this code.
     filename = filedialog.askopenfilename(initialdir="/", title="Select a File",
                                           filetypes=[("Data Files", "*.csv"), ("Data Files", "*.fits")])
-    files.clear()
     canvas.delete('all')
     files.append(filename)
+
+def files_picker():
+    """This function stores the names of files selected and stores them to the files[] array.
+    """
+    files.clear()
+    root = tk.Tk()
+    # Limits file types to .csv and fits. If we want to add excel or other compatibility, change this code.
+    filenames = filedialog.askopenfilenames(parent = root, title="Select a File", 
+                                            filetypes=[("Data Files", "*.csv"), ("Data Files", "*.fits")])
+    canvas.delete('all')
+    files.append(filenames)
+    print(files)
 
 
 def file_selection(file_num):
@@ -72,28 +84,22 @@ def file_selection(file_num):
             canvas.create_text(10, 125, text=files[0], font=font2, anchor='nw')
 
     if file_num == "Multiple Files":
-        folder = File_Management.open_dir()
+        files_picker()
 
         # Prevents program from crashing in the event that the user closes the file selection window.
-        if folder is None:
-            tk.messagebox.showinfo("Error", "Error: No Folder Selected")
-            return
-
-        # Prevents program from crashing in the event that the user chooses a folder containing zero files.
-        elif len(folder) == 0:
-            tk.messagebox.showinfo("Error", "Error: Folder is Empty")
+        if files[0] == "" or files[0] is None:
+            tk.messagebox.showinfo("Error", "Error: No Files Selected")
             return
 
         # Adds the paths to the selected files to the canvas, and stores them in files[].
         else:
-            canvas.delete('all')
             label_height = 125
-            for x in range(0, len(folder)):
-                if not (folder[x].endswith('.csv') or folder[x].endswith('.fits')):
+            for file in files:
+                if not (file.endswith('.csv') or file.endswith('.fits')):
                     continue
                 else:
-                    files.append(folder[x])
-                    canvas.create_text(10, label_height, text=folder[x], font=font2, anchor='nw')
+                    files.append(file)
+                    canvas.create_text(10, label_height, text=file, font=font2, anchor='nw')
                     label_height += 15
 
 
@@ -222,7 +228,8 @@ for y in range(5):
 label1 = tk.Label(win, text="Welcome to the Period Analysis GUI", justify='center')
 label1.grid(row=0, column=1, sticky="")
 
-dropDownFileLabel = tk.Label(win, text='Choose File or Folder: ')
+# Label for file selection dropdown
+dropDownFileLabel = tk.Label(win, text='Choose File(s)')
 dropDownFileLabel.grid(row=1, column=1, sticky='nw')
 
 dropDownFiler = ttk.Combobox(win, textvariable=file_choice, state='readonly')
@@ -233,8 +240,29 @@ dropDownFiler['values'] = ('Single File', 'Multiple Files',
 dropDownFiler.bind("<<ComboboxSelected>>", lambda f: win.focus())
 dropDownFiler.grid(row=1, column=2, sticky='nw')
 
-dropDownLabel = tk.Label(win, text='Choose Algorithm:')
-dropDownLabel.grid(row=2, column=1, sticky='nw')
+# Label for checkboxes used in algorithm selection
+checkBoxLabel = tk.Label(win, text='Choose Algorithm:')
+checkBoxLabel.grid(row=2, column=1, sticky='nw')
+
+# Declare states for checkboxes
+saState = tk.IntVar()
+tsState = tk.IntVar()
+lsState = tk.IntVar()
+acState = tk.IntVar()
+wState = tk.IntVar()
+gpsState = tk.IntVar()
+fwState = tk.IntVar()
+
+# Checkboxes for selection of algorithm(s)
+saCheckBox = tk.Checkbutton(win, text='Select All', variable=saState, onvalue=1, offvalue=0).grid(row=3, column=2, sticky='nw')
+tsCheckBox = tk.Checkbutton(win, text='Time Series', variable=tsState, onvalue=1, offvalue=0).grid(row=4, column=2, sticky='nw')
+lsCheckButton = tk.Checkbutton(win, text='Lomb-Scargle', variable=lsState, onvalue=1, offvalue=0).grid(row=5, column=2, sticky='nw')
+acCheckButton = tk.Checkbutton(win, text='Autocorrelation', variable=acState, onvalue=1, offvalue=0).grid(row=6, column=2, sticky='nw')
+wCheckButton = tk.Checkbutton(win, text='Wavelets', variable=wState, onvalue=1, offvalue=0).grid(row=7, column=2, sticky='nw')
+gpsCheckButton = tk.Checkbutton(win, text='GPS', variable=gpsState, onvalue=1, offvalue=0).grid(row=8, column=2, sticky='nw')
+fwCheckButton = tk.Checkbutton(win, text='Faster Wavelets', variable=fwState, onvalue=1, offvalue=0).grid(row=9, column=2, sticky='nw')
+
+
 
 dropDown = ttk.Combobox(win, textvariable=algorithm_choice, state='readonly')
 dropDown['values'] = ('Time Series', 'Lomb-Scargle', 'Autocorrelation', 'Wavelets', 'GPS', 'Faster Wavelets', 'All')
