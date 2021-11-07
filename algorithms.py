@@ -53,11 +53,6 @@ def selection(time, detrended_flux, algorithm):
         paul_wav(time, np.asarray(detrended_flux))
     elif (algorithm == "6"):
         faster_wavelets(time, detrended_flux)
-    elif(algorithm == "7"):
-        output.plot_graph(time, detrended_flux)
-        plotLombScargle(time, detrended_flux)
-        autoCorr(time, detrended_flux)
-        wavelets(time, detrended_flux)
     elif(algorithm == "0"):
         sys.exit()
     else:

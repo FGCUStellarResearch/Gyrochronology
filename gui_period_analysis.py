@@ -2,7 +2,7 @@ import data_process
 import File_Management
 import algorithms as alg
 import tkinter as tk
-from tkinter import filedialog, Grid, ttk
+from tkinter import Frame, filedialog, Grid, ttk
 import tkinter.font as tkFont
 
 '''
@@ -22,13 +22,10 @@ Note:
 # Creates the GUI
 win = tk.Tk()
 # **Changed window size to wrap current GUI elements.
-win.geometry("380x200")
+win.geometry("380x300")
 # Sets the initial text for the file selection ComboBox.
 file_choice = tk.StringVar(win)
 file_choice.set("Select")
-# Sets the initial text for the algorithm selection ComboBox.
-algorithm_choice = tk.StringVar(win)
-algorithm_choice.set("Select")
 # Creates an array to store the user's chosen files.
 files = []
 algorithms = []
@@ -41,24 +38,24 @@ font2 = tkFont.Font(family="Lithos Pro", size=6)
 def file_picker():
     """This function stores the name of a file selected and stores it to the files[] array.
     """
-    files.clear()
     # Limits file types to .csv and fits. If we want to add excel or other compatibility, change this code.
-    filename = filedialog.askopenfilename(initialdir="/", title="Select a File",
+    filename = filedialog.askopenfilename(parent = win, title="Select a File",
                                           filetypes=[("Data Files", "*.csv"), ("Data Files", "*.fits")])
     canvas.delete('all')
+    files.clear()
     files.append(filename)
+
 
 def files_picker():
     """This function stores the names of files selected and stores them to the files[] array.
     """
-    files.clear()
-    root = tk.Tk()
     # Limits file types to .csv and fits. If we want to add excel or other compatibility, change this code.
-    filenames = filedialog.askopenfilenames(parent = root, title="Select a File", 
+    filenames = filedialog.askopenfilenames(parent = win, title="Select a File", 
                                             filetypes=[("Data Files", "*.csv"), ("Data Files", "*.fits")])
     canvas.delete('all')
-    files.append(filenames)
-    print(files)
+    files.clear()
+    for file in filenames:
+        files.append(file)
 
 
 def file_selection(file_num):
@@ -104,7 +101,7 @@ def file_selection(file_num):
                     label_height += 15
 
 
-def data_op(file_num=None, alg_choice=None):
+def data_op(file_num=None, algorithms = []):
     """ This function takes in a file/s and an algorithm, and passes the given file data to the chosen algorithm.
     Note: each of these parameters are optional in the event that the user does not select a choice from either of their
     respective ComboBoxes, however if either is left as None this function will exit itself.
@@ -115,10 +112,10 @@ def data_op(file_num=None, alg_choice=None):
 
     # Maps the algorithm choices to numbers for compatibility with algorithms.py
     alg_dict = {'Time Series': '1', 'Lomb-Scargle': '2', 'Autocorrelation': '3', 'Wavelets': '4', 'GPS': '5',
-                'Faster Wavelets': '6', 'All': '7'}
+                'Faster Wavelets': '6'}
 
     # Prevents program from crashing in the event that the user doesn't select properly.
-    if file_num is None or file_num == "Select" or alg_choice is None or alg_choice == "Select":
+    if file_num is None or file_num == "Select" or len(algorithms) == 0:
         tk.messagebox.showinfo("Error", "Please select both a file/folder and an algorithm")
 
     elif file_num == "Single File":
@@ -142,28 +139,29 @@ def data_op(file_num=None, alg_choice=None):
         detrended_flux = [float(data) for data in detrended_flux]
         noise = [float(data) for data in background]
 
-        alg_choice = alg_dict[alg_choice]
-
-        alg.selection(time, detrended_flux, alg_choice)
+        for algorithm in algorithms:
+            alg_choice = alg_dict[algorithm]
+            alg.selection(time, detrended_flux, alg_choice)
 
     elif file_num == "Multiple Files":
 
         # Iterates through the files in the selected folder and passes each one through the chosen algorithm.
         # One potential issue with this is if the user intends to pass files through different algorithms.
-        for path in files:
+        for file in files:
             # Prevents program from crashing in the event that the user chooses a folder containing bad file types.
-            if not (path.endswith('.csv') or path.endswith('.fits')):
+            if not (file.endswith('.csv') or file.endswith('.fits')):
                 continue
 
-            File_Management.read_input_file(path)
+            File_Management.read_input_file(file)
 
             time, detrended_flux, background = data_process.get_data()
             time = [float(data) for data in time]
             detrended_flux = [float(data) for data in detrended_flux]
             noise = [float(data) for data in background]
 
-            alg_new = alg_dict[alg_choice]
-            alg.selection(time, detrended_flux, alg_new)
+        for algorithm in algorithms:
+            alg_choice = alg_dict[algorithm]
+            alg.selection(time, detrended_flux, alg_choice)
 
     # This option is not currently functional when used in sequence with a .csv file.
     elif file_num == "Test Sinusoid":
@@ -173,13 +171,16 @@ def data_op(file_num=None, alg_choice=None):
         detrended_flux = [float(data) for data in detrended_flux]
         noise = [float(data) for data in background]
 
-        alg_choice = alg_dict[alg_choice]
-        alg.selection(time, detrended_flux, alg_choice)
+        for algorithm in algorithms:
+            alg_choice = alg_dict[algorithm]
+            alg.selection(time, detrended_flux, alg_choice)
 
+
+# checkbox listener for Select All checkbox
 def saCheckState():
     # if select all checkbox is selected
     if saState.get() == 1:
-        # check all remaining boxes and add algorithms to array
+        # check all remaining boxes and add algorithms to list
         tsState.set(1)
         algorithms.append('Time Series')
         lsState.set(1)
@@ -196,7 +197,7 @@ def saCheckState():
 
     # else if select all checkbox is not selected   
     else:
-        # uncheck all remaining boxes
+        # uncheck all remaining boxes and clear list
         tsState.set(0)
         lsState.set(0)
         acState.set(0)
@@ -205,6 +206,7 @@ def saCheckState():
         fwState.set(0)
         del algorithms[:]
         print(algorithms)
+
 
 # checkbox listener for Time Series algorithm
 def tsCheckState():
@@ -218,6 +220,7 @@ def tsCheckState():
             algorithms.remove('Time Series')
     print(algorithms)
 
+
 # checkbox listener for Lomb-Scargle algorithm
 def lsCheckState():
     # if checkbox is enabled, add algorithm
@@ -229,6 +232,7 @@ def lsCheckState():
         if 'Lomb-Scargle' in algorithms:
             algorithms.remove('Lomb-Scargle')
     print(algorithms)
+
 
 # checkbox listener for Autocorrelation algorithm
 def acCheckState():
@@ -242,6 +246,7 @@ def acCheckState():
             algorithms.remove('Autocorrelation')
     print(algorithms)
 
+
 # checkbox listener for Wavelets algorithm
 def wCheckState():
     # if checkbox is enabled, add algorithm
@@ -254,6 +259,7 @@ def wCheckState():
             algorithms.remove('Wavelets')
     print(algorithms)
 
+
 # checkbox listener for Wavelets algorithm
 def gpsCheckState():
     # if checkbox is enabled, add algorithm
@@ -265,6 +271,7 @@ def gpsCheckState():
         if 'GPS' in algorithms:
             algorithms.remove('GPS')
     print(algorithms)
+
 
 # checkbox listener for Faster Wavelets algorithm
 def fwCheckState():
@@ -340,11 +347,11 @@ dropDownFiler['values'] = ('Single File', 'Multiple Files',
 
 # Prevents the selected option from staying highlighted
 dropDownFiler.bind("<<ComboboxSelected>>", lambda f: win.focus())
-dropDownFiler.grid(row=1, column=2, sticky='nw')
+dropDownFiler.grid(row=2, column=1, sticky='nw')
 
 # Label for checkboxes used in algorithm selection
 checkBoxLabel = tk.Label(win, text='Choose Algorithm:')
-checkBoxLabel.grid(row=2, column=1, sticky='nw')
+checkBoxLabel.grid(row=1, column=2, sticky='nw')
 
 # Declare states for checkboxes
 saState = tk.IntVar()
@@ -357,26 +364,19 @@ fwState = tk.IntVar()
 
 # Checkboxes for selection of algorithm(s)
 saCheckBox = tk.Checkbutton(win, text='Select All', variable=saState, onvalue=1, offvalue=0, command=saCheckState)
-saCheckBox.grid(row=3, column=2, sticky='w')
+saCheckBox.grid(row=2, column=2, sticky='w')
 tsCheckBox = tk.Checkbutton(win, text='Time Series', variable=tsState, onvalue=1, offvalue=0, command=tsCheckState)
-tsCheckBox.grid(row=4, column=2, sticky='w')
+tsCheckBox.grid(row=3, column=2, sticky='w')
 lsCheckButton = tk.Checkbutton(win, text='Lomb-Scargle', variable=lsState, onvalue=1, offvalue=0, command=lsCheckState)
-lsCheckButton.grid(row=5, column=2, sticky='w')
+lsCheckButton.grid(row=4, column=2, sticky='w')
 acCheckButton = tk.Checkbutton(win, text='Autocorrelation', variable=acState, onvalue=1, offvalue=0, command=acCheckState)
-acCheckButton.grid(row=6, column=2, sticky='w')
+acCheckButton.grid(row=5, column=2, sticky='w')
 wCheckButton = tk.Checkbutton(win, text='Wavelets', variable=wState, onvalue=1, offvalue=0, command=wCheckState)
-wCheckButton.grid(row=7, column=2, sticky='w')
+wCheckButton.grid(row=6, column=2, sticky='w')
 gpsCheckButton = tk.Checkbutton(win, text='GPS', variable=gpsState, onvalue=1, offvalue=0, command=gpsCheckState)
-gpsCheckButton.grid(row=8, column=2, sticky='w')
+gpsCheckButton.grid(row=7, column=2, sticky='w')
 fwCheckButton = tk.Checkbutton(win, text='Faster Wavelets', variable=fwState, onvalue=1, offvalue=0, command=fwCheckState)
-fwCheckButton.grid(row=9, column=2, sticky='w')
-
-dropDown = ttk.Combobox(win, textvariable=algorithm_choice, state='readonly')
-dropDown['values'] = ('Time Series', 'Lomb-Scargle', 'Autocorrelation', 'Wavelets', 'GPS', 'Faster Wavelets', 'All')
-
-# Prevents the selected option from staying highlighted
-dropDown.bind("<<ComboboxSelected>>", lambda f: win.focus())
-dropDown.grid(row=2, column=2, sticky='nw')
+fwCheckButton.grid(row=8, column=2, sticky='w')
 
 # Choose File/s
 chooseFiles = tk.Button(win, font=font, text='Choose File/s', bd=1,
@@ -385,15 +385,15 @@ chooseFiles = tk.Button(win, font=font, text='Choose File/s', bd=1,
 # Binds the on_enter and on_leave functions to the chooseFiles button
 chooseFiles.bind('<Enter>', choose_on_enter)
 chooseFiles.bind('<Leave>', choose_on_leave)
-chooseFiles.grid(row=3, column=1, pady=5)
+chooseFiles.grid(sticky='w', row=3, column=1, pady=5)
 
 # Creates the executeMe button and executes the data_op function if it is clicked.
 executeMe = tk.Button(win, font=font, text='Execute', bd=1, command=lambda: [data_op(dropDownFiler.get(),
-                                                                                     dropDown.get())])
+                                                                                     algorithms)])
 # Binds the on_enter and on_leave functions to the executeMe button
 executeMe.bind('<Enter>', exec_on_enter)
 executeMe.bind('<Leave>', exec_on_leave)
-executeMe.grid(row=3, column=2, pady=5)
+executeMe.grid(row=9, column=2, sticky="w")
 
 chosenFiles = tk.Label(win, text='Selected Files:')
 chosenFiles.grid(row=4, column=1, sticky='nw')
