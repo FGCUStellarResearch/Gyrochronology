@@ -176,40 +176,40 @@ def data_op(file_num=None, alg_choice=None):
         alg_choice = alg_dict[alg_choice]
         alg.selection(time, detrended_flux, alg_choice)
 
-def saCheckState(saState):
+def saCheckState():
     # if select all checkbox is selected
-    if saState == 1:
+    if saState.get() == 1:
         # check all remaining boxes and add algorithms to array
-        tsState = 1
+        tsState.set(1)
         algorithms.append('Time Series')
-        lsState = 1
+        lsState.set(1)
         algorithms.append('Lomb-Scargle')
-        acState = 1
+        acState.set(1)
         algorithms.append('Autocorrelation')
-        wState = 1
+        wState.set(1)
         algorithms.append('Wavelets')
-        gpsState = 1
+        gpsState.set(1)
         algorithms.append('GPS')
-        fwState = 1
+        fwState.set(1)
         algorithms.append('Faster Wavelets')
         print(algorithms)
 
     # else if select all checkbox is not selected   
     else:
         # uncheck all remaining boxes
-        tsState = 0
-        lsState = 0
-        acState = 0
-        wState = 0
-        gpsState = 0
-        fwState = 0
+        tsState.set(0)
+        lsState.set(0)
+        acState.set(0)
+        wState.set(0)
+        gpsState.set(0)
+        fwState.set(0)
         del algorithms[:]
         print(algorithms)
 
 # checkbox listener for Time Series algorithm
-def tsCheckState(tsState):
+def tsCheckState():
     # if checkbox is enabled, add algorithm
-    if tsState == 1:
+    if tsState.get() == 1:
         algorithms.append('Time Series')
     # if checkbox is disabled, remove algorithm
     else:
@@ -219,9 +219,9 @@ def tsCheckState(tsState):
     print(algorithms)
 
 # checkbox listener for Lomb-Scargle algorithm
-def lsCheckState(lsState):
+def lsCheckState():
     # if checkbox is enabled, add algorithm
-    if lsState == 1:
+    if lsState.get() == 1:
         algorithms.append('Lomb-Scargle')
     # if checkbox is disabled, remove algorithm
     else:
@@ -231,9 +231,9 @@ def lsCheckState(lsState):
     print(algorithms)
 
 # checkbox listener for Autocorrelation algorithm
-def acCheckState(acState):
+def acCheckState():
     # if checkbox is enabled, add algorithm
-    if acState == 1:
+    if acState.get() == 1:
         algorithms.append('Autocorrelation')
     # if checkbox is disabled, remove algorithm
     else:
@@ -243,9 +243,9 @@ def acCheckState(acState):
     print(algorithms)
 
 # checkbox listener for Wavelets algorithm
-def wCheckState(wState):
+def wCheckState():
     # if checkbox is enabled, add algorithm
-    if wState == 1:
+    if wState.get() == 1:
         algorithms.append('Wavelets')
     # if checkbox is disabled, remove algorithm
     else:
@@ -255,9 +255,9 @@ def wCheckState(wState):
     print(algorithms)
 
 # checkbox listener for Wavelets algorithm
-def gpsCheckState(gpsState):
+def gpsCheckState():
     # if checkbox is enabled, add algorithm
-    if gpsState == 1:
+    if gpsState.get() == 1:
         algorithms.append('GPS')
     # if checkbox is disabled, remove algorithm
     else:
@@ -267,9 +267,9 @@ def gpsCheckState(gpsState):
     print(algorithms)
 
 # checkbox listener for Faster Wavelets algorithm
-def fwCheckState(fwState):
+def fwCheckState():
     # if checkbox is enabled, add algorithm
-    if fwState == 1:
+    if fwState.get() == 1:
         algorithms.append('Faster Wavelets')
     # if checkbox is disabled, remove algorithm
     else:
@@ -356,19 +356,19 @@ gpsState = tk.IntVar()
 fwState = tk.IntVar()
 
 # Checkboxes for selection of algorithm(s)
-saCheckBox = tk.Checkbutton(win, text='Select All', variable=saState, onvalue=1, offvalue=0, command=saCheckState(saState))
+saCheckBox = tk.Checkbutton(win, text='Select All', variable=saState, onvalue=1, offvalue=0, command=saCheckState)
 saCheckBox.grid(row=3, column=2, sticky='w')
-tsCheckBox = tk.Checkbutton(win, text='Time Series', variable=tsState, onvalue=1, offvalue=0, command=tsCheckState(tsState))
+tsCheckBox = tk.Checkbutton(win, text='Time Series', variable=tsState, onvalue=1, offvalue=0, command=tsCheckState)
 tsCheckBox.grid(row=4, column=2, sticky='w')
-lsCheckButton = tk.Checkbutton(win, text='Lomb-Scargle', variable=lsState, onvalue=1, offvalue=0, command=lsCheckState(lsState))
+lsCheckButton = tk.Checkbutton(win, text='Lomb-Scargle', variable=lsState, onvalue=1, offvalue=0, command=lsCheckState)
 lsCheckButton.grid(row=5, column=2, sticky='w')
-acCheckButton = tk.Checkbutton(win, text='Autocorrelation', variable=acState, onvalue=1, offvalue=0, command=acCheckState(acState))
+acCheckButton = tk.Checkbutton(win, text='Autocorrelation', variable=acState, onvalue=1, offvalue=0, command=acCheckState)
 acCheckButton.grid(row=6, column=2, sticky='w')
-wCheckButton = tk.Checkbutton(win, text='Wavelets', variable=wState, onvalue=1, offvalue=0, command=wCheckState(wState))
+wCheckButton = tk.Checkbutton(win, text='Wavelets', variable=wState, onvalue=1, offvalue=0, command=wCheckState)
 wCheckButton.grid(row=7, column=2, sticky='w')
-gpsCheckButton = tk.Checkbutton(win, text='GPS', variable=gpsState, onvalue=1, offvalue=0, command=gpsCheckState(gpsState))
+gpsCheckButton = tk.Checkbutton(win, text='GPS', variable=gpsState, onvalue=1, offvalue=0, command=gpsCheckState)
 gpsCheckButton.grid(row=8, column=2, sticky='w')
-fwCheckButton = tk.Checkbutton(win, text='Faster Wavelets', variable=fwState, onvalue=1, offvalue=0, command=fwCheckState(fwState))
+fwCheckButton = tk.Checkbutton(win, text='Faster Wavelets', variable=fwState, onvalue=1, offvalue=0, command=fwCheckState)
 fwCheckButton.grid(row=9, column=2, sticky='w')
 
 dropDown = ttk.Combobox(win, textvariable=algorithm_choice, state='readonly')
