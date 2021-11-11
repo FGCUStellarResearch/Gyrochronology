@@ -1,5 +1,7 @@
-from os import stat
+import os
 from tkinter.constants import ACTIVE, COMMAND, DISABLED
+
+from numpy import NaN
 import data_process
 import File_Management
 import algorithms as alg
@@ -52,12 +54,12 @@ def files_picker():
     """This function stores the names of files selected and stores them to the files[] array.
     """
     # Limits file types to .csv and fits. If we want to add excel or other compatibility, change this code.
+    global files
     filenames = filedialog.askopenfilenames(parent = win, title="Select a File", 
                                             filetypes=[("Data Files", "*.csv"), ("Data Files", "*.fits")])
     canvas.delete('all')
     files.clear()
-    for file in filenames:
-        files.append(file)
+    files = list(filenames)
 
 
 def file_selection(file_num):
@@ -81,7 +83,7 @@ def file_selection(file_num):
             return
 
         else:
-            canvas.create_text(10, 125, text=files[0], font=font2, anchor='nw')
+            canvas.create_text(10, 125, text=os.path.relpath(files[0]), font=font2, anchor='nw')
 
     if file_num == "Multiple Files":
         files_picker()
@@ -93,13 +95,12 @@ def file_selection(file_num):
 
         # Adds the paths to the selected files to the canvas, and stores them in files[].
         else:
-            label_height = 125
+            label_height = 130
             for file in files:
                 if not (file.endswith('.csv') or file.endswith('.fits')):
                     continue
                 else:
-                    files.append(file)
-                    canvas.create_text(10, label_height, text=file, font=font2, anchor='nw')
+                    canvas.create_text(10, label_height, text=os.path.relpath(file), font=font2, anchor='nw')
                     label_height += 15
 
 
@@ -316,7 +317,6 @@ def choose_on_enter(event):
         chooseFiles.config(background='black', foreground="white")
     
 
-
 def choose_on_leave(event):
     """This function reverts the color of the chooseFiles button when the users stops hovering over it.
     Args:
@@ -345,8 +345,6 @@ label1.grid(row=0, column=1, sticky="")
 # Label for file selection dropdown
 dropDownFileLabel = tk.Label(win, text='Select Data Type')
 dropDownFileLabel.grid(row=1, column=1, sticky='nw')
-
-
 
 dropDownFiler = ttk.Combobox(win, textvariable=file_choice, state='readonly')
 dropDownFiler['values'] = ('Single File', 'Multiple Files',
@@ -392,9 +390,6 @@ chooseFiles.bind('<Enter>', choose_on_enter)
 chooseFiles.bind('<Leave>', choose_on_leave)
 chooseFiles.grid(sticky='w', row=3, column=1, pady=5)
 
-
-    
-
 # Creates the executeMe button and executes the data_op function if it is clicked.
 executeMe = tk.Button(win, font=font, text='Execute', bd=1, command=lambda: [data_op(dropDownFiler.get(),
                                                                                      algorithms)])
@@ -408,7 +403,7 @@ chosenFiles.grid(row=4, column=1, sticky='nw')
 
 def selectedDataType(event):
     print(dropDownFiler.get())
-    if dropDownFiler.get() == "Test Sinusoid":
+    if dropDownFiler.get() == "Test Sinusoid" or file_choice.get() == NaN:
         chooseFiles.config(state=DISABLED) 
         chosenFiles.grid_remove();
     else:
