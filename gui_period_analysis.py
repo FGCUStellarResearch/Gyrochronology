@@ -352,15 +352,6 @@ dropDownFiler = ttk.Combobox(win, textvariable=file_choice, state='readonly')
 dropDownFiler['values'] = ('Single File', 'Multiple Files',
                            'Test Sinusoid')
 
-def selectedCity(event):
-    print(dropDownFiler.get())
-    if dropDownFiler.get() == "Test Sinusoid":
-        chooseFiles.config(state=DISABLED) 
-    else:
-        chooseFiles.config(state=ACTIVE)
-    win.focus();
-
-dropDownFiler.bind("<<ComboboxSelected>>", selectedCity)
 dropDownFiler.grid(row=2, column=1, sticky='nw')
 
 # Label for checkboxes used in algorithm selection
@@ -414,5 +405,17 @@ executeMe.grid(row=9, column=2, sticky="w")
 
 chosenFiles = tk.Label(win, text='Selected Files:')
 chosenFiles.grid(row=4, column=1, sticky='nw')
+
+def selectedDataType(event):
+    print(dropDownFiler.get())
+    if dropDownFiler.get() == "Test Sinusoid":
+        chooseFiles.config(state=DISABLED) 
+        chosenFiles.grid_remove();
+    else:
+        chooseFiles.config(state=ACTIVE)
+        chosenFiles.grid();
+    win.focus();
+
+dropDownFiler.bind("<<ComboboxSelected>>", selectedDataType)
 
 win.mainloop()
