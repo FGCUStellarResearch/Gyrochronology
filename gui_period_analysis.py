@@ -30,6 +30,7 @@ win.geometry("380x300")
 # Sets the initial text for the file selection ComboBox.
 file_choice = tk.StringVar(win)
 file_choice.set("Select")
+chosenFiles = tk.Label(win, text='Selected Files:')
 # Creates an array to store the user's chosen files.
 files = []
 algorithms = []
@@ -83,6 +84,7 @@ def file_selection(file_num):
             return
 
         else:
+            chosenFiles.grid(row=4, column=1, sticky='nw')
             canvas.create_text(10, 125, text=os.path.relpath(files[0]), font=font2, anchor='nw')
 
     if file_num == "Multiple Files":
@@ -95,6 +97,7 @@ def file_selection(file_num):
 
         # Adds the paths to the selected files to the canvas, and stores them in files[].
         else:
+            chosenFiles.grid(row=4, column=1, sticky='nw')
             label_height = 130
             for file in files:
                 if not (file.endswith('.csv') or file.endswith('.fits')):
@@ -311,10 +314,12 @@ def choose_on_enter(event):
     Args:
         event (tkinter.Event): automatically passed when the user's mouse enters the button's coordinates.
     """
-    if dropDownFiler.get() == "Test Sinusoid":
-        chooseFiles.config(background='lightgray', foreground='black')
-    else:
+    if dropDownFiler.get() == "Single File":
         chooseFiles.config(background='black', foreground="white")
+    elif dropDownFiler.get() == "Multiple Files":
+        chooseFiles.config(background='black', foreground="white")
+    else:
+        chooseFiles.config(background='lightgray', foreground='black')
     
 
 def choose_on_leave(event):
@@ -390,6 +395,8 @@ chooseFiles.bind('<Enter>', choose_on_enter)
 chooseFiles.bind('<Leave>', choose_on_leave)
 chooseFiles.grid(sticky='w', row=3, column=1, pady=5)
 
+chooseFiles.config(state=DISABLED) 
+
 # Creates the executeMe button and executes the data_op function if it is clicked.
 executeMe = tk.Button(win, font=font, text='Execute', bd=1, command=lambda: [data_op(dropDownFiler.get(),
                                                                                      algorithms)])
@@ -398,17 +405,14 @@ executeMe.bind('<Enter>', exec_on_enter)
 executeMe.bind('<Leave>', exec_on_leave)
 executeMe.grid(row=9, column=2, sticky="w")
 
-chosenFiles = tk.Label(win, text='Selected Files:')
-chosenFiles.grid(row=4, column=1, sticky='nw')
-
 def selectedDataType(event):
     print(dropDownFiler.get())
-    if dropDownFiler.get() == "Test Sinusoid" or file_choice.get() == NaN:
-        chooseFiles.config(state=DISABLED) 
-        chosenFiles.grid_remove();
-    else:
+    if dropDownFiler.get() == "Single File":
         chooseFiles.config(state=ACTIVE)
-        chosenFiles.grid();
+    elif dropDownFiler.get() == "Multiple Files":
+        chooseFiles.config(state=ACTIVE)
+    else:
+        chooseFiles.config(state=DISABLED) 
     win.focus();
 
 dropDownFiler.bind("<<ComboboxSelected>>", selectedDataType)
