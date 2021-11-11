@@ -1,3 +1,5 @@
+from os import stat
+from tkinter.constants import ACTIVE, COMMAND, DISABLED
 import data_process
 import File_Management
 import algorithms as alg
@@ -165,6 +167,7 @@ def data_op(file_num=None, algorithms = []):
 
     # This option is not currently functional when used in sequence with a .csv file.
     elif file_num == "Test Sinusoid":
+        chooseFiles.config(state=DISABLED)
         data_process.create_sin()
         time, detrended_flux, background = data_process.get_data()
         time = [float(data) for data in time]
@@ -318,7 +321,6 @@ def choose_on_leave(event):
     """
     chooseFiles.config(background='lightgray', foreground='black')
 
-
 # Gives a title to the GUI window
 win.title("Period Analysis")
 
@@ -338,15 +340,24 @@ label1 = tk.Label(win, text="Welcome to the Period Analysis GUI", justify='cente
 label1.grid(row=0, column=1, sticky="")
 
 # Label for file selection dropdown
-dropDownFileLabel = tk.Label(win, text='Choose File(s)')
+dropDownFileLabel = tk.Label(win, text='Select Data Type')
 dropDownFileLabel.grid(row=1, column=1, sticky='nw')
+
+
 
 dropDownFiler = ttk.Combobox(win, textvariable=file_choice, state='readonly')
 dropDownFiler['values'] = ('Single File', 'Multiple Files',
                            'Test Sinusoid')
 
-# Prevents the selected option from staying highlighted
-dropDownFiler.bind("<<ComboboxSelected>>", lambda f: win.focus())
+def selectedCity(event):
+    print(dropDownFiler.get())
+    if dropDownFiler.get() == "Test Sinusoid":
+        chooseFiles.config(state=DISABLED)    
+    else:
+        chooseFiles.config(state=ACTIVE)
+    win.focus_force;
+
+dropDownFiler.bind("<<ComboboxSelected>>", selectedCity)
 dropDownFiler.grid(row=2, column=1, sticky='nw')
 
 # Label for checkboxes used in algorithm selection
@@ -386,6 +397,9 @@ chooseFiles = tk.Button(win, font=font, text='Choose File/s', bd=1,
 chooseFiles.bind('<Enter>', choose_on_enter)
 chooseFiles.bind('<Leave>', choose_on_leave)
 chooseFiles.grid(sticky='w', row=3, column=1, pady=5)
+
+
+    
 
 # Creates the executeMe button and executes the data_op function if it is clicked.
 executeMe = tk.Button(win, font=font, text='Execute', bd=1, command=lambda: [data_op(dropDownFiler.get(),
