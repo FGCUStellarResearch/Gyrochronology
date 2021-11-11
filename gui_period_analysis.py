@@ -310,8 +310,11 @@ def choose_on_enter(event):
     Args:
         event (tkinter.Event): automatically passed when the user's mouse enters the button's coordinates.
     """
-
-    chooseFiles.config(background='black', foreground="white")
+    if dropDownFiler.get() == "Test Sinusoid":
+        chooseFiles.config(background='lightgray', foreground='black')
+    else:
+        chooseFiles.config(background='black', foreground="white")
+    
 
 
 def choose_on_leave(event):
@@ -352,7 +355,7 @@ dropDownFiler['values'] = ('Single File', 'Multiple Files',
 def selectedCity(event):
     print(dropDownFiler.get())
     if dropDownFiler.get() == "Test Sinusoid":
-        chooseFiles.config(state=DISABLED)    
+        chooseFiles.config(state=DISABLED) 
     else:
         chooseFiles.config(state=ACTIVE)
     win.focus();
