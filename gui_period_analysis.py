@@ -355,7 +355,7 @@ def selectedCity(event):
         chooseFiles.config(state=DISABLED)    
     else:
         chooseFiles.config(state=ACTIVE)
-    win.focus_force;
+    win.focus();
 
 dropDownFiler.bind("<<ComboboxSelected>>", selectedCity)
 dropDownFiler.grid(row=2, column=1, sticky='nw')
