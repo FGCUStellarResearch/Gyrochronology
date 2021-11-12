@@ -385,7 +385,7 @@ fwCheckButton = tk.Checkbutton(win, text='Faster Wavelets', variable=fwState, on
 fwCheckButton.grid(row=8, column=2, sticky='w')
 
 # Choose File/s
-chooseFiles = tk.Button(win, font=font, text='Choose File/s', bd=1,
+chooseFiles = tk.Button(win, font=font, text='Choose File/s', bd=1, background='lightgray', foreground='black',
                         command=lambda: [file_selection(dropDownFiler.get())])
 
 # Binds the on_enter and on_leave functions to the chooseFiles button
@@ -395,7 +395,7 @@ chooseFiles.grid(sticky='w', row=3, column=1, pady=5)
 chooseFiles.config(state=DISABLED) 
 
 # Creates the executeMe button and executes the data_op function if it is clicked.
-executeMe = tk.Button(win, font=font, text='Execute', bd=1, command=lambda: [data_op(dropDownFiler.get(),
+executeMe = tk.Button(win, font=font, text='Execute', bd=1, background='lightgray', foreground='black', command=lambda: [data_op(dropDownFiler.get(),
                                                                                      algorithms)])
 # Binds the on_enter and on_leave functions to the executeMe button
 executeMe.bind('<Enter>', exec_on_enter)
@@ -407,10 +407,10 @@ def fileInputChanged(*args):
     files.clear()
     canvas.delete('all')
     if dropDownFiler.get() == "Single File":
-        chooseFiles.config(state='active')
+        chooseFiles.config(state='normal')
         print("Single File")
     elif dropDownFiler.get() == "Multiple Files":
-        chooseFiles.config(state='active')
+        chooseFiles.config(state='normal')
         print("Multiple Files")
     else:
         chooseFiles.config(state='disabled') 
