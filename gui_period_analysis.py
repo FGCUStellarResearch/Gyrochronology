@@ -353,6 +353,7 @@ dropDownFiler = ttk.Combobox(win, textvariable=file_choice, state='readonly')
 dropDownFiler['values'] = ('Single File', 'Multiple Files',
                            'Test Sinusoid')
 
+dropDownFiler.bind("<<ComboboxSelected>>", lambda f: win.focus())
 dropDownFiler.grid(row=2, column=1, sticky='nw')
 
 # Label for checkboxes used in algorithm selection
