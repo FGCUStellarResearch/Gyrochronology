@@ -301,19 +301,19 @@ def fwCheckState():
 def checkInput():
     if dropDownFiler.get() == "Single File":
         # Prevents user from clicking execute button if there are no files or algorithms selected
-        if file_choice is None or file_choice == "Select" or len(files) == 0 or len(algorithms) == 0:
+        if file_choice is None or file_choice.get() == "Select" or len(files) == 0 or len(algorithms) == 0:
             executeMe.config(state='disabled') 
         else:
             executeMe.config(state='normal')
     elif dropDownFiler.get() == "Multiple Files":
         # Prevents user from clicking execute button if there are no files or algorithms selected
-        if file_choice is None or file_choice == "Select" or len(files) == 0 or len(algorithms) == 0:
+        if file_choice is None or file_choice.get() == "Select" or len(files) == 0 or len(algorithms) == 0:
             executeMe.config(state='disabled') 
         else:
             executeMe.config(state='normal')
     else:
         # Prevents user from clicking execute button if there are no files or algorithms selected
-        if file_choice is None or file_choice == "Select" or len(algorithms) == 0:
+        if file_choice is None or file_choice.get() == "Select" or len(algorithms) == 0:
             executeMe.config(state='disabled') 
         else:
             executeMe.config(state='normal')
@@ -326,15 +326,15 @@ def exec_on_enter(event):
 
     if dropDownFiler.get() == "Single File":
         # Prevents user from clicking execute button if there are no files or algorithms selected
-        if not(file_choice is None or file_choice == "Select" or len(files) == 0 or len(algorithms) == 0):
+        if not(file_choice is None or file_choice.get() == "Select" or len(files) == 0 or len(algorithms) == 0):
             executeMe.config(background='black', foreground="white") 
     elif dropDownFiler.get() == "Multiple Files":
         # Prevents user from clicking execute button if there are no files or algorithms selected
-        if not(file_choice is None or file_choice == "Select" or len(files) == 0 or len(algorithms) == 0):
+        if not(file_choice is None or file_choice.get() == "Select" or len(files) == 0 or len(algorithms) == 0):
             executeMe.config(background='black', foreground="white") 
     else:
         # Prevents user from clicking execute button if there are no files or algorithms selected
-        if not(file_choice is None or file_choice == "Select" or len(algorithms) == 0):
+        if not(file_choice is None or file_choice.get() == "Select" or len(algorithms) == 0):
             executeMe.config(background='black', foreground="white") 
 
 
@@ -379,11 +379,11 @@ for y in range(5):
     Grid.rowconfigure(win, y, weight=0)
 
 # This text should probably be changed, I was unsure of the proper name for this program.
-label1 = tk.Label(win, text="Welcome to the Period Analysis GUI", justify='center')
+label1 = tk.Label(win, text="Welcome to the Period Analysis GUI.", justify='center')
 label1.grid(row=0, column=1, sticky="")
 
 # Label for file selection dropdown
-dropDownFileLabel = tk.Label(win, text='Select Data Type')
+dropDownFileLabel = tk.Label(win, text='Data Source:')
 dropDownFileLabel.grid(row=1, column=1, sticky='nw')
 
 dropDownFiler = ttk.Combobox(win, textvariable=file_choice, state='readonly')
@@ -394,7 +394,7 @@ dropDownFiler.bind("<<ComboboxSelected>>", lambda f: win.focus())
 dropDownFiler.grid(row=2, column=1, sticky='nw')
 
 # Label for checkboxes used in algorithm selection
-checkBoxLabel = tk.Label(win, text='Choose Algorithm:')
+checkBoxLabel = tk.Label(win, text='Algorithm:')
 checkBoxLabel.grid(row=1, column=2, sticky='nw')
 
 # Declare states for checkboxes
