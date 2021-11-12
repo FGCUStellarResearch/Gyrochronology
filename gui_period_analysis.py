@@ -213,7 +213,7 @@ def saCheckState():
         fwState.set(0)
         del algorithms[:]
         print(algorithms)
-
+    checkInput()
 
 # checkbox listener for Time Series algorithm
 def tsCheckState():
@@ -225,6 +225,7 @@ def tsCheckState():
         # checks if algorithm is already present before removing it, to prevent program from crashing
         if 'Time Series' in algorithms:
             algorithms.remove('Time Series')
+    checkInput()
     print(algorithms)
 
 
@@ -238,6 +239,7 @@ def lsCheckState():
         # checks if algorithm is already present before removing it, to prevent program from crashing
         if 'Lomb-Scargle' in algorithms:
             algorithms.remove('Lomb-Scargle')
+    checkInput()
     print(algorithms)
 
 
@@ -251,6 +253,7 @@ def acCheckState():
         # checks if algorithm is already present before removing it, to prevent program from crashing
         if 'Autocorrelation' in algorithms:
             algorithms.remove('Autocorrelation')
+    checkInput()
     print(algorithms)
 
 
@@ -264,6 +267,7 @@ def wCheckState():
         # checks if algorithm is already present before removing it, to prevent program from crashing
         if 'Wavelets' in algorithms:
             algorithms.remove('Wavelets')
+    checkInput()
     print(algorithms)
 
 
@@ -277,6 +281,7 @@ def gpsCheckState():
         # checks if algorithm is already present before removing it, to prevent program from crashing
         if 'GPS' in algorithms:
             algorithms.remove('GPS')
+    checkInput()
     print(algorithms)
 
 
@@ -290,7 +295,28 @@ def fwCheckState():
         # checks if algorithm is already present before removing it, to prevent program from crashing
         if 'Faster Wavelets' in algorithms:
             algorithms.remove('Faster Wavelets')
+    checkInput()
     print(algorithms)
+
+def checkInput():
+    if dropDownFiler.get() == "Single File":
+        # Prevents user from clicking execute button if there are no files or algorithms selected
+        if file_choice is None or file_choice == "Select" or len(files) == 0 or len(algorithms) == 0:
+            executeMe.config(state='disabled') 
+        else:
+            executeMe.config(state='normal')
+    elif dropDownFiler.get() == "Multiple Files":
+        # Prevents user from clicking execute button if there are no files or algorithms selected
+        if file_choice is None or file_choice == "Select" or len(files) == 0 or len(algorithms) == 0:
+            executeMe.config(state='disabled') 
+        else:
+            executeMe.config(state='normal')
+    else:
+        # Prevents user from clicking execute button if there are no files or algorithms selected
+        if file_choice is None or file_choice == "Select" or len(algorithms) == 0:
+            executeMe.config(state='disabled') 
+        else:
+            executeMe.config(state='normal')
 
 def exec_on_enter(event):
     """This function changes the color of the executeMe button when the user hovers over it.
@@ -298,7 +324,18 @@ def exec_on_enter(event):
         event (tkinter.Event): automatically passed when the user's mouse enters the button's coordinates.
     """
 
-    executeMe.config(background='black', foreground="white")
+    if dropDownFiler.get() == "Single File":
+        # Prevents user from clicking execute button if there are no files or algorithms selected
+        if not(file_choice is None or file_choice == "Select" or len(files) == 0 or len(algorithms) == 0):
+            executeMe.config(background='black', foreground="white") 
+    elif dropDownFiler.get() == "Multiple Files":
+        # Prevents user from clicking execute button if there are no files or algorithms selected
+        if not(file_choice is None or file_choice == "Select" or len(files) == 0 or len(algorithms) == 0):
+            executeMe.config(background='black', foreground="white") 
+    else:
+        # Prevents user from clicking execute button if there are no files or algorithms selected
+        if not(file_choice is None or file_choice == "Select" or len(algorithms) == 0):
+            executeMe.config(background='black', foreground="white") 
 
 
 def exec_on_leave(event):
@@ -396,7 +433,7 @@ chooseFiles.grid(sticky='w', row=3, column=1, pady=5)
 chooseFiles.config(state=DISABLED) 
 
 # Creates the executeMe button and executes the data_op function if it is clicked.
-executeMe = tk.Button(win, font=font, text='Execute', bd=1, background='lightgray', foreground='black', command=lambda: [data_op(dropDownFiler.get(),
+executeMe = tk.Button(win, font=font, text='Execute', bd=1, background='lightgray', state='disabled', foreground='black', command=lambda: [data_op(dropDownFiler.get(),
                                                                                      algorithms)])
 # Binds the on_enter and on_leave functions to the executeMe button
 executeMe.bind('<Enter>', exec_on_enter)
@@ -407,6 +444,11 @@ executeMe.grid(row=9, column=2, sticky="w")
 def fileInputChanged(*args):
     files.clear()
     canvas.delete('all')
+
+    checkInput()
+
+    # Prevents user from clicking browse files button when there is no 
+    # file input type selected or a test file has been selected
     if dropDownFiler.get() == "Single File":
         chooseFiles.config(state='normal')
         print("Single File")
