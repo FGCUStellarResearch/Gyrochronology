@@ -1,12 +1,11 @@
 import os
 from tkinter.constants import ACTIVE, COMMAND, DISABLED
 
-from numpy import NaN
 import data_process
 import File_Management
 import algorithms as alg
 import tkinter as tk
-from tkinter import Frame, filedialog, Grid, ttk
+from tkinter import filedialog, Grid, ttk
 import tkinter.font as tkFont
 
 '''
@@ -30,8 +29,7 @@ win.geometry("380x300")
 # Sets the initial text for the file selection ComboBox.
 file_choice = tk.StringVar(win)
 file_choice.set("Select")
-chosenFiles = tk.Label(win, text='Selected Files:')
-# Creates an array to store the user's chosen files.
+# Creates an array to store the user's chosen files and algorithms.
 files = []
 algorithms = []
 # Creates the font for the executeMe and chooseFiles buttons.
@@ -84,6 +82,7 @@ def file_selection(file_num):
             return
 
         else:
+            chosenFiles = tk.Label(win, text='Selected Files:')
             chosenFiles.grid(row=4, column=1, sticky='nw')
             canvas.create_text(10, 125, text=os.path.relpath(files[0]), font=font2, anchor='nw')
 
@@ -97,6 +96,7 @@ def file_selection(file_num):
 
         # Adds the paths to the selected files to the canvas, and stores them in files[].
         else:
+            chosenFiles = tk.Label(win, text='Selected Files:')
             chosenFiles.grid(row=4, column=1, sticky='nw')
             label_height = 130
             for file in files:
@@ -318,8 +318,6 @@ def choose_on_enter(event):
         chooseFiles.config(background='black', foreground="white")
     elif dropDownFiler.get() == "Multiple Files":
         chooseFiles.config(background='black', foreground="white")
-    else:
-        chooseFiles.config(background='lightgray', foreground='black')
     
 
 def choose_on_leave(event):
@@ -394,7 +392,6 @@ chooseFiles = tk.Button(win, font=font, text='Choose File/s', bd=1,
 chooseFiles.bind('<Enter>', choose_on_enter)
 chooseFiles.bind('<Leave>', choose_on_leave)
 chooseFiles.grid(sticky='w', row=3, column=1, pady=5)
-
 chooseFiles.config(state=DISABLED) 
 
 # Creates the executeMe button and executes the data_op function if it is clicked.
@@ -405,16 +402,21 @@ executeMe.bind('<Enter>', exec_on_enter)
 executeMe.bind('<Leave>', exec_on_leave)
 executeMe.grid(row=9, column=2, sticky="w")
 
-def selectedDataType(event):
-    print(dropDownFiler.get())
+# event listener for file input type dropdown
+def fileInputChanged(*args):
+    files.clear()
+    canvas.delete('all')
     if dropDownFiler.get() == "Single File":
-        chooseFiles.config(state=ACTIVE)
+        chooseFiles.config(state='active')
+        print("Single File")
     elif dropDownFiler.get() == "Multiple Files":
-        chooseFiles.config(state=ACTIVE)
+        chooseFiles.config(state='active')
+        print("Multiple Files")
     else:
-        chooseFiles.config(state=DISABLED) 
+        chooseFiles.config(state='disabled') 
+        print("Other")
     win.focus();
 
-dropDownFiler.bind("<<ComboboxSelected>>", selectedDataType)
+file_choice.trace("w", fileInputChanged)
 
 win.mainloop()
