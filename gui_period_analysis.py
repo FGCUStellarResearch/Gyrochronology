@@ -45,6 +45,7 @@ def file_picker():
     filename = filedialog.askopenfilename(parent = win, title="Select a File",
                                           filetypes=[("Data Files", "*.csv"), ("Data Files", "*.fits")])
     canvas.delete('all')
+    chosenFiles.grid_remove()
     files.clear()
     files.append(filename)
 
@@ -57,6 +58,7 @@ def files_picker():
     filenames = filedialog.askopenfilenames(parent = win, title="Select a File", 
                                             filetypes=[("Data Files", "*.csv"), ("Data Files", "*.fits")])
     canvas.delete('all')
+    chosenFiles.grid_remove()
     files.clear()
     files = list(filenames)
 
@@ -82,9 +84,8 @@ def file_selection(file_num):
             return
 
         else:
-            chosenFiles = tk.Label(win, text='Selected Files:')
-            chosenFiles.grid(row=4, column=1, sticky='nw')
-            canvas.create_text(10, 125, text=os.path.relpath(files[0]), font=font2, anchor='nw')
+            chosenFiles.grid()
+            canvas.create_text(10, 130, text=os.path.relpath(files[0]), font=font2, anchor='nw')
 
     if file_num == "Multiple Files":
         files_picker()
@@ -96,13 +97,13 @@ def file_selection(file_num):
 
         # Adds the paths to the selected files to the canvas, and stores them in files[].
         else:
-            chosenFiles = tk.Label(win, text='Selected Files:')
-            chosenFiles.grid(row=4, column=1, sticky='nw')
+            canvas.delete('all')
             label_height = 130
             for file in files:
                 if not (file.endswith('.csv') or file.endswith('.fits')):
                     continue
                 else:
+                    chosenFiles.grid()
                     canvas.create_text(10, label_height, text=os.path.relpath(file), font=font2, anchor='nw')
                     label_height += 15
 
@@ -440,13 +441,18 @@ executeMe.bind('<Enter>', exec_on_enter)
 executeMe.bind('<Leave>', exec_on_leave)
 executeMe.grid(row=9, column=2, sticky="w")
 
+chosenFiles = tk.Label(win, text='Selected Files:')
+chosenFiles.grid(row=4, column=1, sticky='nw')
+chosenFiles.grid_remove()
+
 # event listener for file input type dropdown
 def fileInputChanged(*args):
     files.clear()
     canvas.delete('all')
 
+    chosenFiles.grid_remove()
     checkInput()
-
+    
     # Prevents user from clicking browse files button when there is no 
     # file input type selected or a test file has been selected
     if dropDownFiler.get() == "Single File":
