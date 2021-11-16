@@ -75,19 +75,7 @@ def file_selection(file_num):
         tk.messagebox.showinfo("Error", "Error: Please Choose a File Option")
         return
 
-    elif file_num == "Single File":
-        file_picker()
-
-        # Prevents program from crashing in the event that the user closes the file selection window.
-        if files[0] == "" or files[0] is None:
-            tk.messagebox.showinfo("Error", "Error: No Files Selected")
-            return
-
-        else:
-            chosenFiles.grid()
-            canvas.create_text(10, 130, text=os.path.relpath(files[0]), font=font2, anchor='nw')
-
-    if file_num == "Multiple Files":
+    elif file_num == "Browse For File(s)":
         files_picker()
 
         # Prevents program from crashing in the event that the user closes the file selection window.
@@ -125,32 +113,7 @@ def data_op(file_num=None, algorithms = []):
     if file_num is None or file_num == "Select" or len(algorithms) == 0:
         tk.messagebox.showinfo("Error", "Please select both a file/folder and an algorithm")
 
-    elif file_num == "Single File":
-        
-        # Prevents program from crashing in the event that the user closes the file selection window.
-        if not files:
-            tk.messagebox.showinfo("Error", "Error: No Files Selected")
-            return
-        
-        # Also prevents program from crashing in the event that the user closes the file selection window.
-        elif files[0] == "" or files[0] is None:
-            tk.messagebox.showinfo("Error", "Error: No Files Selected")
-            return
-
-        else:
-            print(files[0])
-            File_Management.read_input_file(files[0])
-
-        time, detrended_flux, background = data_process.get_data()
-        time = [float(data) for data in time]
-        detrended_flux = [float(data) for data in detrended_flux]
-        noise = [float(data) for data in background]
-
-        for algorithm in algorithms:
-            alg_choice = alg_dict[algorithm]
-            alg.selection(time, detrended_flux, alg_choice)
-
-    elif file_num == "Multiple Files":
+    elif file_num == "Browse For File(s)":
 
         # Iterates through the files in the selected folder and passes each one through the chosen algorithm.
         # One potential issue with this is if the user intends to pass files through different algorithms.
@@ -300,13 +263,7 @@ def fwCheckState():
     print(algorithms)
 
 def checkInput():
-    if dropDownFiler.get() == "Single File":
-        # Prevents user from clicking execute button if there are no files or algorithms selected
-        if file_choice is None or file_choice.get() == "Select" or len(files) == 0 or len(algorithms) == 0:
-            executeMe.config(state='disabled') 
-        else:
-            executeMe.config(state='normal')
-    elif dropDownFiler.get() == "Multiple Files":
+    if dropDownFiler.get() == "Browse For File(s)":
         # Prevents user from clicking execute button if there are no files or algorithms selected
         if file_choice is None or file_choice.get() == "Select" or len(files) == 0 or len(algorithms) == 0:
             executeMe.config(state='disabled') 
@@ -325,11 +282,7 @@ def exec_on_enter(event):
         event (tkinter.Event): automatically passed when the user's mouse enters the button's coordinates.
     """
 
-    if dropDownFiler.get() == "Single File":
-        # Prevents user from clicking execute button if there are no files or algorithms selected
-        if not(file_choice is None or file_choice.get() == "Select" or len(files) == 0 or len(algorithms) == 0):
-            executeMe.config(background='black', foreground="white") 
-    elif dropDownFiler.get() == "Multiple Files":
+    if dropDownFiler.get() == "Browse For File(s)":
         # Prevents user from clicking execute button if there are no files or algorithms selected
         if not(file_choice is None or file_choice.get() == "Select" or len(files) == 0 or len(algorithms) == 0):
             executeMe.config(background='black', foreground="white") 
@@ -352,9 +305,7 @@ def choose_on_enter(event):
     Args:
         event (tkinter.Event): automatically passed when the user's mouse enters the button's coordinates.
     """
-    if dropDownFiler.get() == "Single File":
-        chooseFiles.config(background='black', foreground="white")
-    elif dropDownFiler.get() == "Multiple Files":
+    if dropDownFiler.get() == "Browse For File(s)":
         chooseFiles.config(background='black', foreground="white")
     
 
@@ -388,8 +339,7 @@ dropDownFileLabel = tk.Label(win, text='Data Source:')
 dropDownFileLabel.grid(row=1, column=1, sticky='nw')
 
 dropDownFiler = ttk.Combobox(win, textvariable=file_choice, state='readonly')
-dropDownFiler['values'] = ('Single File', 'Multiple Files',
-                           'Test Sinusoid')
+dropDownFiler['values'] = ('Browse For File(s)','Test Sinusoid')
 
 dropDownFiler.bind("<<ComboboxSelected>>", lambda f: win.focus())
 dropDownFiler.grid(row=2, column=1, sticky='nw')
@@ -455,15 +405,10 @@ def fileInputChanged(*args):
     
     # Prevents user from clicking browse files button when there is no 
     # file input type selected or a test file has been selected
-    if dropDownFiler.get() == "Single File":
+    if dropDownFiler.get() == "Browse For File(s)":
         chooseFiles.config(state='normal')
-        print("Single File")
-    elif dropDownFiler.get() == "Multiple Files":
-        chooseFiles.config(state='normal')
-        print("Multiple Files")
     else:
         chooseFiles.config(state='disabled') 
-        print("Other")
     win.focus();
 
 file_choice.trace("w", fileInputChanged)
