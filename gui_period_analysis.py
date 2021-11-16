@@ -79,7 +79,7 @@ def file_selection(file_num):
         files_picker()
 
         # Prevents program from crashing in the event that the user closes the file selection window.
-        if files[0] == "" or files[0] is None:
+        if not files:
             tk.messagebox.showinfo("Error", "Error: No Files Selected")
             return
 
