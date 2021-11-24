@@ -179,11 +179,13 @@ def saCheckState():
         print(algorithms)
     checkInput()
 
+
 # checkbox listener for Time Series algorithm
 def tsCheckState():
     # if checkbox is enabled, add algorithm
     if tsState.get() == 1:
-        algorithms.append('Time Series')
+        # add to beginning of list
+        algorithms.insert(0, 'Time Series')
     # if checkbox is disabled, remove algorithm
     else:
         # checks if algorithm is already present before removing it, to prevent program from crashing
