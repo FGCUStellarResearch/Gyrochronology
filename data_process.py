@@ -97,7 +97,7 @@ def get_data():
 def clear_data():
     time.clear()
     raw_flux.clear()
-    detrended_flux.clear()
+    detrended_flux[:] = 0
     background.clear()
     x_pos.clear()
     y_pos.clear()

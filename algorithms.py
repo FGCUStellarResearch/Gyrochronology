@@ -30,8 +30,7 @@ To-Do:
     - Fix windowing on output graphs. Properly show the peak, as well as uncertainty window.
     - Continue testing on different fits files.
 '''
-
-def selection(time, detrended_flux, algorithm):
+def selection(time, detrended_flux, algorithm, plot_count, total_plots):
     """Read menu selection, and call respective algorithm.
 
     Args:
@@ -40,24 +39,37 @@ def selection(time, detrended_flux, algorithm):
         algorithm (String): Menu selection number for chosen algorithm.
     """
     if(algorithm == "1"):
-        output.plot_graph(time, detrended_flux, xlab='Time (d)', ylab='Relative Amplitude (mag)', title='Time Series')
+        plotTimeSeries(time, detrended_flux, plot_count)
     elif(algorithm == "2"):
-        plotLombScargle(time, detrended_flux)
+        plotLombScargle(time, detrended_flux, plot_count)
     elif(algorithm == "3"):
-        autoCorr(time, detrended_flux)
+        plotAutoCorrelation(time, detrended_flux, plot_count)
     elif(algorithm == "4"):        
-        wavelets(time, detrended_flux)
+        plotWavelets(time, detrended_flux, plot_count)
     elif(algorithm == "5"):
-        paul_wav(time, np.asarray(detrended_flux))
+        plotPaulWavelet(time, np.asarray(detrended_flux), plot_count)
     elif (algorithm == "6"):
-        faster_wavelets(time, detrended_flux)
+        plotFasterWavelets(time, detrended_flux, plot_count)
     elif(algorithm == "0"):
         sys.exit()
     else:
         print("This is not a valid selection.")
+    print(total_plots)
+    if(plot_count == total_plots):
+        plt.show()
     data_process.clear_data()
 
-def plotLombScargle(time, flux):
+
+def plotTimeSeries(time, detrended_flux, plot_count):
+    print(plot_count)
+    plt.figure(plot_count)
+    plt.plot(time, detrended_flux)
+    plt.xlabel('Time (d)')
+    plt.ylabel('Relative Amplitude (mag)')
+    plt.title('Time Series')
+
+
+def plotLombScargle(time, flux, plot_count):
     """Finding the period of the selected data with astropy's Lombscargle package.
     *** Interpolation coefficients and truncated arrays are hardcoded, may need to be altered. ***
 
@@ -85,7 +97,14 @@ def plotLombScargle(time, flux):
     plt_text = find_uncertainty(frequency, power, tot_time, noise, peak_index, interp_coeff)
 
     # Temporary box coordinates, will have to be changed***
-    output.plot_graph(frequency, power, "Frequency - Cycles/Day", "Power", "Lomb-Scargle Periods", plt_text, .2, max(power))
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    plt.figure(plot_count)
+    plt.plot(frequency, power)
+    plt.xlabel("Frequency - Cycles/Day")
+    plt.ylabel("Power")
+    plt.title("Lomb-Scargle Periods")
+    plt.text(.2, max(power), plt_text, verticalalignment='top', bbox=props)
+
     
 def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
     """Method to find uncertainty for the autocorrelation function and Lomb-Scargle Periodogram. 
@@ -273,7 +292,7 @@ def find_gps_uncertainty(frequency, power, tot_time, noise, max_freq, coeffs):
     return plt_text
 
 
-def autoCorr(time, flux):
+def plotAutoCorrelation(time, flux, plot_count):
     """Using autocorrelation function from MatPlotLib to find period.
 
     Args:
@@ -335,11 +354,18 @@ def autoCorr(time, flux):
 
     plt.xlim(min_x * 1.25, max_x * 1.25)
     plt.ylim(min_y * 1.25, max_y * 1.25)
-    
+
     # Temporary box coordinates, will have to be changed***
-    output.plot_graph(lags, acf, "Lags", "ACF", "AutoCorrelation", plt_text, max_x * .90, max_per * 1.1)
- 
-def wavelets(time, flux):
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    plt.figure(plot_count)
+    plt.plot(lags, acf)
+    plt.xlabel("Lags")
+    plt.ylabel("ACF")
+    plt.title("AutoCorrelation")
+    plt.text(max_x * .90, max_per * 1.1, plt_text, verticalalignment='top', bbox=props)
+    
+
+def plotWavelets(time, flux, plot_count):
     """Using morlet wavelet from scaleogram package to determine period. 
         Values are plotted on a 2-D contour map, and then transformed into
         a 1-D plot.
@@ -373,9 +399,13 @@ def wavelets(time, flux):
     # Period values from the fastcwt function.
     transformed_time = 1./scales_freq
 
-    output.plot_graph(transformed_time, period_sum, "Period", "Sum per Period", "Wavelet Transformation - 1-D")
+    plt.figure(plot_count)
+    plt.plot(transformed_time, period_sum)
+    plt.xlabel("Period")
+    plt.ylabel("Sum per Period")
+    plt.title("Wavelet Transformation - 1-D")
 
-def paul_wav(time, flux):
+def plotPaulWavelet(time, flux, plot_count):
     """Using Aaron O'Leary's wavelet package to compute the paul wavelet.
        Paul wavelet is used in computing the Gradient of the Power Spectrum.
 
@@ -393,7 +423,7 @@ def paul_wav(time, flux):
 
     t = wa.time
     
-    GPS(time, frequencies, periods,  np.sum(power, axis=1))
+    plotGPS(time, frequencies, periods,  np.sum(power, axis=1))
     #Attempting to plot period values on a 1-D grid.
     plt.plot(scales , np.sum(power, axis=1))
     plt.show()
@@ -406,7 +436,7 @@ def paul_wav(time, flux):
     ax.set_yscale('log')
     plt.show()
 
-def GPS(time, frequency, period, power_sum):
+def plotGPS(time, frequency, period, power_sum, plot_count):
     """ Using the Paul wavelet to find the Gradient of the Power Spectrum.
         Current problem: given our calculation of period using the alpha value, 
         the period we find is not the peak of the graph. The period is printed to
@@ -465,7 +495,7 @@ def GPS(time, frequency, period, power_sum):
     # print(aa)
     
     
-def faster_wavelets(time, flux):
+def plotFasterWavelets(time, flux, plot_count):
     """Using Aaron O'Leary's wavelet package to compute the Morlet wavelet.
 
     Args:
@@ -490,6 +520,7 @@ def faster_wavelets(time, flux):
 
     t = wa.time
 
+    plt.figure(plot_count)
     plt.plot(scales, np.sum(power, axis=1))
     box = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
     # idx = unif2D(power.astype(float), size=7, mode='constant').argmax()

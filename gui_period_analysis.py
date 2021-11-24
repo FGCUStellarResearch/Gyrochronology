@@ -95,6 +95,8 @@ def data_op(file_num=None, algorithms = []):
         file_num (String): the amount of files chosen by the user. Either single or multiple files, or a test sinusoid.
         alg_choice (String): the user's chosen algorithm.
     """
+    # number of plots generated
+    plot_count = 0
 
     # Maps the algorithm choices to numbers for compatibility with algorithms.py
     alg_dict = {'Time Series': '1', 'Lomb-Scargle': '2', 'Autocorrelation': '3', 'Wavelets': '4', 'GPS': '5',
@@ -121,8 +123,9 @@ def data_op(file_num=None, algorithms = []):
             noise = [float(data) for data in background]
 
         for algorithm in algorithms:
+            plot_count = plot_count + 1
             alg_choice = alg_dict[algorithm]
-            alg.selection(time, detrended_flux, alg_choice)
+            alg.selection(time, detrended_flux, alg_choice, plot_count, len(algorithms))
 
     # This option is not currently functional when used in sequence with a .csv file.
     elif file_num == "Test Sinusoid":
@@ -134,8 +137,9 @@ def data_op(file_num=None, algorithms = []):
         noise = [float(data) for data in background]
 
         for algorithm in algorithms:
+            plot_count = plot_count + 1
             alg_choice = alg_dict[algorithm]
-            alg.selection(time, detrended_flux, alg_choice)
+            alg.selection(time, detrended_flux, alg_choice, plot_count, len(algorithms))
 
 
 # checkbox listener for Select All checkbox
