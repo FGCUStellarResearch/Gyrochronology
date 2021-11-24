@@ -1,5 +1,5 @@
 import os
-from tkinter.constants import ACTIVE, COMMAND, DISABLED
+from tkinter.constants import ACTIVE, ANCHOR, COMMAND, DISABLED, LEFT
 
 import data_process
 import File_Management
@@ -46,8 +46,8 @@ def files_picker():
     global files
     filenames = filedialog.askopenfilenames(parent = win, title="Select a File", 
                                             filetypes=[("Data Files", "*.csv"), ("Data Files", "*.fits")])
-    canvas.delete('all')
-    chosenFiles.grid_remove()
+    chosenFilesLabel.grid_remove()
+    chosenFilesTextField.grid_remove()
     files.clear()
     files = list(filenames)
 
@@ -75,15 +75,16 @@ def file_selection(file_num):
         # Adds the paths to the selected files to the canvas, and stores them in files[].
         else:
             checkInput()
-            canvas.delete('all')
-            label_height = 130
+            chosenFilesTextField.grid_remove()
+            fileNames = ''
             for file in files:
                 if not (file.endswith('.csv') or file.endswith('.fits')):
                     continue
                 else:
-                    chosenFiles.grid()
-                    canvas.create_text(10, label_height, text=os.path.relpath(file), font=font2, anchor='nw')
-                    label_height += 15
+                    chosenFilesLabel.grid()
+                    fileNames += os.path.relpath(file) + '\n'
+                    chosenFilesTextField.config(text=fileNames, font=font2)
+                    chosenFilesTextField.grid()
 
 
 def data_op(file_num=None, algorithms = []):
@@ -317,7 +318,7 @@ for y in range(5):
     Grid.rowconfigure(win, y, weight=0)
 
 # This text should probably be changed, I was unsure of the proper name for this program.
-label1 = tk.Label(win, text="Welcome to the Period Analysis GUI.", justify='center')
+label1 = tk.Label(win, text="Welcome to the Period Analysis GUI.", justify=LEFT)
 label1.grid(row=0, column=1, pady=(10, 10), sticky="")
 
 # Label for file selection dropdown
@@ -340,13 +341,17 @@ chooseFiles.bind('<Leave>', choose_on_leave)
 chooseFiles.grid(sticky='w', row=3, column=1, pady=(5, 0))
 chooseFiles.config(state=DISABLED) 
 
-chosenFiles = tk.Label(win, text='Selected Files:')
-chosenFiles.grid(row=4, column=1, sticky='nw')
-chosenFiles.grid_remove()
+chosenFilesLabel = tk.Label(win, text='Selected Files:')
+chosenFilesLabel.grid(row=4, column=1, sticky='nw')
+chosenFilesLabel.grid_remove()
+
+chosenFilesTextField = tk.Label(win, anchor='e', justify=LEFT)
+chosenFilesTextField.grid(row=5, column=1, sticky='nw')
+chosenFilesTextField.grid_remove()
 
 # Label for checkboxes used in algorithm selection
 checkBoxLabel = tk.Label(win, text='2. Algorithm')
-checkBoxLabel.grid(row=5, column=1, pady=(10, 0), sticky='nw')
+checkBoxLabel.grid(row=6, column=1, pady=(10, 0), sticky='nw')
 
 # Declare states for checkboxes
 saState = tk.IntVar()
@@ -359,15 +364,15 @@ fwState = tk.IntVar()
 
 # Checkboxes for selection of algorithm(s)
 saCheckBox = tk.Checkbutton(win, text='Select All', variable=saState, onvalue=1, offvalue=0, command=saCheckState)
-saCheckBox.grid(row=6, column=1, sticky='w')
+saCheckBox.grid(row=7, column=1, sticky='w')
 tsCheckBox = tk.Checkbutton(win, text='Time Series', variable=tsState, onvalue=1, offvalue=0, command=tsCheckState)
-tsCheckBox.grid(row=7, column=1, sticky='w')
+tsCheckBox.grid(row=8, column=1, sticky='w')
 lsCheckButton = tk.Checkbutton(win, text='Lomb-Scargle', variable=lsState, onvalue=1, offvalue=0, command=lsCheckState)
-lsCheckButton.grid(row=8, column=1, sticky='w')
+lsCheckButton.grid(row=9, column=1, sticky='w')
 acCheckButton = tk.Checkbutton(win, text='Autocorrelation', variable=acState, onvalue=1, offvalue=0, command=acCheckState)
-acCheckButton.grid(row=9, column=1, sticky='w')
+acCheckButton.grid(row=10, column=1, sticky='w')
 fwCheckButton = tk.Checkbutton(win, text='Faster Wavelets', variable=fwState, onvalue=1, offvalue=0, command=fwCheckState)
-fwCheckButton.grid(row=10, column=1, sticky='w')
+fwCheckButton.grid(row=11, column=1, sticky='w')
 
 # Creates the executeMe button and executes the data_op function if it is clicked.
 executeMe = tk.Button(win, font=font, text='Execute', bd=1, background='lightgray', state='disabled', foreground='black', command=lambda: [data_op(dropDownFiler.get(),
@@ -375,14 +380,14 @@ executeMe = tk.Button(win, font=font, text='Execute', bd=1, background='lightgra
 # Binds the on_enter and on_leave functions to the executeMe button
 executeMe.bind('<Enter>', exec_on_enter)
 executeMe.bind('<Leave>', exec_on_leave)
-executeMe.grid(row=11, column=1, pady=(5, 0), sticky="w")
+executeMe.grid(row=12, column=1, pady=(5, 0), sticky="w")
 
 # event listener for file input type dropdown
 def fileInputChanged(*args):
     files.clear()
-    canvas.delete('all')
+    chosenFilesTextField.grid_remove()
 
-    chosenFiles.grid_remove()
+    chosenFilesLabel.grid_remove()
     checkInput()
     
     # Prevents user from clicking browse files button when there is no 
