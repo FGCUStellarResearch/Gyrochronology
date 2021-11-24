@@ -423,9 +423,9 @@ def plotPaulWavelet(time, flux, plot_count):
 
     t = wa.time
     
-    plotGPS(time, frequencies, periods,  np.sum(power, axis=1))
+    plotGPS(time, frequencies, periods, np.sum(power, axis=1), plot_count)
     #Attempting to plot period values on a 1-D grid.
-    plt.plot(scales , np.sum(power, axis=1))
+    plt.plot(scales, np.sum(power, axis=1))
     plt.show()
 
     # Plotting wavelet results on 2D map.
@@ -548,7 +548,6 @@ def plotFasterWavelets(time, flux, plot_count):
     # Finds lower and upper uncertainties. Values are saved and placed on the plot.
     plt_text = find_uncertainty(scales, power_sum, tot_time, noise, holder, interp_coeff)
     plt.text(5,5,plt_text, bbox=box)
-    plt.show()
 
     # Plotting wavelet results on 2D map.
     fig, ax = plt.subplots()
@@ -559,5 +558,4 @@ def plotFasterWavelets(time, flux, plot_count):
     plt.xlabel('Time')
     plt.ylabel('Frequency')
     plt.title('Faster Wavelets')
-    plt.show()
     
