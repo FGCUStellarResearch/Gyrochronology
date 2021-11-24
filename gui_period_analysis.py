@@ -38,18 +38,6 @@ font = tkFont.Font(family="Lithos Pro", size=12)
 font2 = tkFont.Font(family="Lithos Pro", size=6)
 
 
-def file_picker():
-    """This function stores the name of a file selected and stores it to the files[] array.
-    """
-    # Limits file types to .csv and fits. If we want to add excel or other compatibility, change this code.
-    filename = filedialog.askopenfilename(parent = win, title="Select a File",
-                                          filetypes=[("Data Files", "*.csv"), ("Data Files", "*.fits")])
-    canvas.delete('all')
-    chosenFiles.grid_remove()
-    files.clear()
-    files.append(filename)
-
-
 def files_picker():
     """This function stores the names of files selected and stores them to the files[] array.
     """
@@ -85,6 +73,7 @@ def file_selection(file_num):
 
         # Adds the paths to the selected files to the canvas, and stores them in files[].
         else:
+            checkInput()
             canvas.delete('all')
             label_height = 130
             for file in files:
