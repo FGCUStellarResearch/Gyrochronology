@@ -25,7 +25,7 @@ Note:
 # Creates the GUI
 win = tk.Tk()
 # **Changed window size to wrap current GUI elements.
-win.geometry("380x400")
+win.geometry("250x400")
 
 # Sets the initial text for the file selection ComboBox.
 file_choice = tk.StringVar(win)
@@ -319,11 +319,11 @@ for y in range(5):
 
 # This text should probably be changed, I was unsure of the proper name for this program.
 label1 = tk.Label(win, text="Welcome to the Period Analysis GUI.", justify=LEFT)
-label1.grid(row=0, column=1, pady=(10, 10), sticky="")
+label1.grid(row=0, pady=(10, 0), column=1, sticky="")
 
 # Label for file selection dropdown
 dropDownFileLabel = tk.Label(win, text='1. Data Source')
-dropDownFileLabel.grid(row=1, column=1, sticky='nw')
+dropDownFileLabel.grid(row=1, pady=(10, 5), column=1, sticky='nw')
 
 dropDownFiler = ttk.Combobox(win, textvariable=file_choice, state='readonly')
 dropDownFiler['values'] = ('Browse For File(s)','Test Sinusoid')
@@ -338,11 +338,11 @@ chooseFiles = tk.Button(win, font=font, text='Choose File/s', bd=1, background='
 # Binds the on_enter and on_leave functions to the chooseFiles button
 chooseFiles.bind('<Enter>', choose_on_enter)
 chooseFiles.bind('<Leave>', choose_on_leave)
-chooseFiles.grid(sticky='w', row=3, column=1, pady=(5, 0))
+chooseFiles.grid(sticky='w', row=3, column=1, pady=(10, 0))
 chooseFiles.config(state=DISABLED) 
 
 chosenFilesLabel = tk.Label(win, text='Selected Files:')
-chosenFilesLabel.grid(row=4, column=1, sticky='nw')
+chosenFilesLabel.grid(row=4, pady=(5, 0), column=1, sticky='nw')
 chosenFilesLabel.grid_remove()
 
 chosenFilesTextField = tk.Label(win, anchor='e', justify=LEFT)
@@ -351,7 +351,7 @@ chosenFilesTextField.grid_remove()
 
 # Label for checkboxes used in algorithm selection
 checkBoxLabel = tk.Label(win, text='2. Algorithm')
-checkBoxLabel.grid(row=6, column=1, pady=(10, 0), sticky='nw')
+checkBoxLabel.grid(row=6, column=1, pady=(10, 5), sticky='nw')
 
 # Declare states for checkboxes
 saState = tk.IntVar()
