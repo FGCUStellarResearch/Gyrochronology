@@ -1,7 +1,6 @@
 import sys
 import numpy as np
 import astropy as ap
-import File_Management
 import data_process
 import output
 from astropy.timeseries import LombScargle
@@ -9,8 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import scaleogram as scg
 import pywt
-from wavelets import WaveletAnalysis
-from wavelets import Paul
+from wavelets import *
 from scipy import signal
 from scipy import stats
 from scipy import fftpack
@@ -42,7 +40,7 @@ def selection(time, detrended_flux, algorithm):
         algorithm (String): Menu selection number for chosen algorithm.
     """
     if(algorithm == "1"):
-        output.plot_graph(time, detrended_flux)
+        output.plot_graph(time, detrended_flux, xlab='Time (d)', ylab='Relative Amplitude (mag)', title='Time Series')
     elif(algorithm == "2"):
         plotLombScargle(time, detrended_flux)
     elif(algorithm == "3"):
@@ -494,7 +492,7 @@ def faster_wavelets(time, flux):
 
     plt.plot(scales, np.sum(power, axis=1))
     box = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-    idx = unif2D(power.astype(float), size=7, mode='constant').argmax()
+    # idx = unif2D(power.astype(float), size=7, mode='constant').argmax()
 
     holder = 0
     holder_sum = 0
@@ -527,5 +525,8 @@ def faster_wavelets(time, flux):
 
     ax.contourf(T, S, power, 100)
     # ax.set_yscale('log')
+    plt.xlabel('Time')
+    plt.ylabel('Frequency')
+    plt.title('Faster Wavelets')
     plt.show()
     
