@@ -25,7 +25,8 @@ Note:
 # Creates the GUI
 win = tk.Tk()
 # **Changed window size to wrap current GUI elements.
-win.geometry("380x300")
+win.geometry("380x400")
+
 # Sets the initial text for the file selection ComboBox.
 file_choice = tk.StringVar(win)
 file_choice.set("Select")
@@ -317,10 +318,10 @@ for y in range(5):
 
 # This text should probably be changed, I was unsure of the proper name for this program.
 label1 = tk.Label(win, text="Welcome to the Period Analysis GUI.", justify='center')
-label1.grid(row=0, column=1, sticky="")
+label1.grid(row=0, column=1, pady=(10, 10), sticky="")
 
 # Label for file selection dropdown
-dropDownFileLabel = tk.Label(win, text='Data Source:')
+dropDownFileLabel = tk.Label(win, text='1. Data Source')
 dropDownFileLabel.grid(row=1, column=1, sticky='nw')
 
 dropDownFiler = ttk.Combobox(win, textvariable=file_choice, state='readonly')
@@ -329,9 +330,23 @@ dropDownFiler['values'] = ('Browse For File(s)','Test Sinusoid')
 dropDownFiler.bind("<<ComboboxSelected>>", lambda f: win.focus())
 dropDownFiler.grid(row=2, column=1, sticky='nw')
 
+# Choose File/s
+chooseFiles = tk.Button(win, font=font, text='Choose File/s', bd=1, background='lightgray', foreground='black',
+                        command=lambda: [file_selection(dropDownFiler.get())])
+
+# Binds the on_enter and on_leave functions to the chooseFiles button
+chooseFiles.bind('<Enter>', choose_on_enter)
+chooseFiles.bind('<Leave>', choose_on_leave)
+chooseFiles.grid(sticky='w', row=3, column=1, pady=(5, 0))
+chooseFiles.config(state=DISABLED) 
+
+chosenFiles = tk.Label(win, text='Selected Files:')
+chosenFiles.grid(row=4, column=1, sticky='nw')
+chosenFiles.grid_remove()
+
 # Label for checkboxes used in algorithm selection
-checkBoxLabel = tk.Label(win, text='Algorithm:')
-checkBoxLabel.grid(row=1, column=2, sticky='nw')
+checkBoxLabel = tk.Label(win, text='2. Algorithm')
+checkBoxLabel.grid(row=5, column=1, pady=(10, 0), sticky='nw')
 
 # Declare states for checkboxes
 saState = tk.IntVar()
@@ -344,25 +359,15 @@ fwState = tk.IntVar()
 
 # Checkboxes for selection of algorithm(s)
 saCheckBox = tk.Checkbutton(win, text='Select All', variable=saState, onvalue=1, offvalue=0, command=saCheckState)
-saCheckBox.grid(row=2, column=2, sticky='w')
+saCheckBox.grid(row=6, column=1, sticky='w')
 tsCheckBox = tk.Checkbutton(win, text='Time Series', variable=tsState, onvalue=1, offvalue=0, command=tsCheckState)
-tsCheckBox.grid(row=3, column=2, sticky='w')
+tsCheckBox.grid(row=7, column=1, sticky='w')
 lsCheckButton = tk.Checkbutton(win, text='Lomb-Scargle', variable=lsState, onvalue=1, offvalue=0, command=lsCheckState)
-lsCheckButton.grid(row=4, column=2, sticky='w')
+lsCheckButton.grid(row=8, column=1, sticky='w')
 acCheckButton = tk.Checkbutton(win, text='Autocorrelation', variable=acState, onvalue=1, offvalue=0, command=acCheckState)
-acCheckButton.grid(row=5, column=2, sticky='w')
+acCheckButton.grid(row=9, column=1, sticky='w')
 fwCheckButton = tk.Checkbutton(win, text='Faster Wavelets', variable=fwState, onvalue=1, offvalue=0, command=fwCheckState)
-fwCheckButton.grid(row=6, column=2, sticky='w')
-
-# Choose File/s
-chooseFiles = tk.Button(win, font=font, text='Choose File/s', bd=1, background='lightgray', foreground='black',
-                        command=lambda: [file_selection(dropDownFiler.get())])
-
-# Binds the on_enter and on_leave functions to the chooseFiles button
-chooseFiles.bind('<Enter>', choose_on_enter)
-chooseFiles.bind('<Leave>', choose_on_leave)
-chooseFiles.grid(sticky='w', row=3, column=1, pady=5)
-chooseFiles.config(state=DISABLED) 
+fwCheckButton.grid(row=10, column=1, sticky='w')
 
 # Creates the executeMe button and executes the data_op function if it is clicked.
 executeMe = tk.Button(win, font=font, text='Execute', bd=1, background='lightgray', state='disabled', foreground='black', command=lambda: [data_op(dropDownFiler.get(),
@@ -370,11 +375,7 @@ executeMe = tk.Button(win, font=font, text='Execute', bd=1, background='lightgra
 # Binds the on_enter and on_leave functions to the executeMe button
 executeMe.bind('<Enter>', exec_on_enter)
 executeMe.bind('<Leave>', exec_on_leave)
-executeMe.grid(row=9, column=2, sticky="w")
-
-chosenFiles = tk.Label(win, text='Selected Files:')
-chosenFiles.grid(row=4, column=1, sticky='nw')
-chosenFiles.grid_remove()
+executeMe.grid(row=11, column=1, pady=(5, 0), sticky="w")
 
 # event listener for file input type dropdown
 def fileInputChanged(*args):
