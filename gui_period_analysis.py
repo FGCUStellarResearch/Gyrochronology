@@ -147,10 +147,6 @@ def saCheckState():
         algorithms.append('Lomb-Scargle')
         acState.set(1)
         algorithms.append('Autocorrelation')
-        wState.set(1)
-        algorithms.append('Wavelets')
-        gpsState.set(1)
-        algorithms.append('GPS')
         fwState.set(1)
         algorithms.append('Faster Wavelets')
         print(algorithms)
@@ -161,8 +157,6 @@ def saCheckState():
         tsState.set(0)
         lsState.set(0)
         acState.set(0)
-        wState.set(0)
-        gpsState.set(0)
         fwState.set(0)
         del algorithms[:]
         print(algorithms)
@@ -357,12 +351,8 @@ lsCheckButton = tk.Checkbutton(win, text='Lomb-Scargle', variable=lsState, onval
 lsCheckButton.grid(row=4, column=2, sticky='w')
 acCheckButton = tk.Checkbutton(win, text='Autocorrelation', variable=acState, onvalue=1, offvalue=0, command=acCheckState)
 acCheckButton.grid(row=5, column=2, sticky='w')
-wCheckButton = tk.Checkbutton(win, text='Wavelets', variable=wState, onvalue=1, offvalue=0, command=wCheckState)
-wCheckButton.grid(row=6, column=2, sticky='w')
-gpsCheckButton = tk.Checkbutton(win, text='GPS', variable=gpsState, onvalue=1, offvalue=0, command=gpsCheckState)
-gpsCheckButton.grid(row=7, column=2, sticky='w')
 fwCheckButton = tk.Checkbutton(win, text='Faster Wavelets', variable=fwState, onvalue=1, offvalue=0, command=fwCheckState)
-fwCheckButton.grid(row=8, column=2, sticky='w')
+fwCheckButton.grid(row=6, column=2, sticky='w')
 
 # Choose File/s
 chooseFiles = tk.Button(win, font=font, text='Choose File/s', bd=1, background='lightgray', foreground='black',
