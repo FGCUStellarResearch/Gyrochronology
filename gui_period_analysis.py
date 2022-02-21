@@ -7,6 +7,7 @@ import algorithms as alg
 import tkinter as tk
 from tkinter import filedialog, Grid, ttk
 import tkinter.font as tkFont
+import matplotlib.pyplot as plt
 
 '''
 This code effectively replaces period_analysis.py with a GUI version of the same code with the same functionality.
@@ -95,6 +96,10 @@ def data_op(file_num=None, algorithms = []):
         file_num (String): the amount of files chosen by the user. Either single or multiple files, or a test sinusoid.
         alg_choice (String): the user's chosen algorithm.
     """
+
+    # close all plots previously generated
+    plt.close('all')
+
     # number of plots generated
     plot_count = 0
 
