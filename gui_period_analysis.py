@@ -115,46 +115,54 @@ def data_op(file_num=None, algorithms = []):
 
         # Iterates through the files in the selected folder and passes each one through the chosen algorithm.
         # One potential issue with this is if the user intends to pass files through different algorithms.
-        print(len(files))
         multiple_files_selected = bool(len(files) > 1)
         # If single file is selected
         if not multiple_files_selected:
             print("Single file selected")
             
-            file = files[0]
-            if not (file.endswith('.csv') or file.endswith('.fits')):
+            inputFile = files[0]
+            if not (inputFile.endswith('.csv') or inputFile.endswith('.fits')):
                 return
 
-            File_Management.read_input_file(file)
+            # Read data from file
+            File_Management.read_input_file(inputFile)
 
             time, detrended_flux, background = data_process.get_data()
             time = [float(data) for data in time]
             detrended_flux = [float(data) for data in detrended_flux]
             noise = [float(data) for data in background]
-
+            
+            # Loop through algorithms and execute each on data
             for algorithm in algorithms:
                 plot_count = plot_count + 1
                 alg_choice = alg_dict[algorithm]
-                alg.selection(time, detrended_flux, alg_choice, plot_count, len(algorithm))
+                alg.selection(time, detrended_flux, alg_choice, plot_count, len(algorithm), multiple_files_selected, inputFile)
         # If multiple files are selected
-        else: 
+        else:  
             print("Multiple files selected")
-            for file in files:
+            for inputFile in files:
                 # Prevents program from crashing in the event that the user chooses a folder containing bad file types.
-                if not (file.endswith('.csv') or file.endswith('.fits')):
+                if not (inputFile.endswith('.csv') or inputFile.endswith('.fits')):
                     continue
 
-                File_Management.read_input_file(file)
+                # Read data from file
+                File_Management.read_input_file(inputFile)
 
                 time, detrended_flux, background = data_process.get_data()
                 time = [float(data) for data in time]
                 detrended_flux = [float(data) for data in detrended_flux]
                 noise = [float(data) for data in background]
 
+                # open output file in write mode, wiping previous data
+                outputFile = open('output.txt', 'w')
+
+                # Loop through algorithms and execute each on data
                 for algorithm in algorithms:
                     plot_count = plot_count + 1
                     alg_choice = alg_dict[algorithm]
-                    alg.selection(time, detrended_flux, alg_choice, plot_count, len(algorithms))
+                    alg.selection(time, detrended_flux, alg_choice, plot_count, len(algorithms), multiple_files_selected, inputFile, outputFile)
+
+                outputFile.close
 
     # This option is not currently functional when used in sequence with a .csv file.
     elif file_num == "Test Sinusoid":

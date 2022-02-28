@@ -1,4 +1,5 @@
 import sys
+from nbformat import write
 import numpy as np
 import astropy as ap
 import data_process
@@ -30,7 +31,7 @@ To-Do:
     - Fix windowing on output graphs. Properly show the peak, as well as uncertainty window.
     - Continue testing on different fits files.
 '''
-def selection(time, detrended_flux, algorithm, plot_count, total_plots):
+def selection(time, detrended_flux, algorithm, plot_count, total_plots, print_to_file, input_file, output_file):
     """Read menu selection, and call respective algorithm.
 
     Args:
@@ -39,37 +40,40 @@ def selection(time, detrended_flux, algorithm, plot_count, total_plots):
         algorithm (String): Menu selection number for chosen algorithm.
     """
     if(algorithm == "1"):
-        plotTimeSeries(time, detrended_flux, plot_count)
+        plotTimeSeries(time, detrended_flux, plot_count, print_to_file, input_file, output_file)
     elif(algorithm == "2"):
-        plotLombScargle(time, detrended_flux, plot_count)
+        plotLombScargle(time, detrended_flux, plot_count, print_to_file, input_file, output_file)
     elif(algorithm == "3"):
-        plotAutoCorrelation(time, detrended_flux, plot_count)
+        plotAutoCorrelation(time, detrended_flux, plot_count, print_to_file, input_file, output_file)
     elif(algorithm == "4"):        
-        plotWavelets(time, detrended_flux, plot_count)
+        plotWavelets(time, detrended_flux, plot_count, print_to_file, input_file, output_file)
     elif(algorithm == "5"):
-        plotPaulWavelet(time, np.asarray(detrended_flux), plot_count)
+        plotPaulWavelet(time, np.asarray(detrended_flux), plot_count, print_to_file, input_file, output_file)
     elif (algorithm == "6"):
-        plotFasterWavelets(time, detrended_flux, plot_count)
+        plotFasterWavelets(time, detrended_flux, plot_count, print_to_file, input_file, output_file)
     elif(algorithm == "0"):
         sys.exit()
     else:
         print("This is not a valid selection.")
-    print(total_plots)
     if(plot_count == total_plots):
         plt.show()
     data_process.clear_data()
 
 
-def plotTimeSeries(time, detrended_flux, plot_count):
-    print(plot_count)
-    plt.figure(plot_count)
-    plt.plot(time, detrended_flux)
-    plt.xlabel('Time (d)')
-    plt.ylabel('Relative Amplitude (mag)')
-    plt.title('Time Series')
+def plotTimeSeries(time, detrended_flux, plot_count, print_to_file, input_file, output_file):
+    # If multiple files, print to file
+    if print_to_file:
+        print("Print to file is true")
+    # Else plot figure
+    else:
+        plt.figure(plot_count)
+        plt.plot(time, detrended_flux)
+        plt.xlabel('Time (d)')
+        plt.ylabel('Relative Amplitude (mag)')
+        plt.title('Time Series')
 
 
-def plotLombScargle(time, flux, plot_count):
+def plotLombScargle(time, flux, plot_count, print_to_file, input_file, output_file):
     """Finding the period of the selected data with astropy's Lombscargle package.
     *** Interpolation coefficients and truncated arrays are hardcoded, may need to be altered. ***
 
@@ -94,19 +98,24 @@ def plotLombScargle(time, flux, plot_count):
     peak_index = np.where(power == period)[0][0]
     
     # Finds lower and upper uncertainties. Values are saved and placed on the plot.
-    plt_text = find_uncertainty(frequency, power, tot_time, noise, peak_index, interp_coeff)
+    plt_text = find_uncertainty(frequency, power, tot_time, noise, peak_index, interp_coeff, 'LS', print_to_file, output_file)
 
-    # Temporary box coordinates, will have to be changed***
-    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-    plt.figure(plot_count)
-    plt.plot(frequency, power)
-    plt.xlabel("Frequency - Cycles/Day")
-    plt.ylabel("Power")
-    plt.title("Lomb-Scargle Periods")
-    plt.text(.2, max(power), plt_text, verticalalignment='top', bbox=props)
+    # If multiple files, print to file
+    if print_to_file:
+        output_file.write("Target: %s\n" % (input_file))
+    # Else plot figure
+    else:
+        # Temporary box coordinates, will have to be changed***
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        plt.figure(plot_count)
+        plt.plot(frequency, power)
+        plt.xlabel("Frequency - Cycles/Day")
+        plt.ylabel("Power")
+        plt.title("Lomb-Scargle Periods")
+        plt.text(.2, max(power), plt_text, verticalalignment='top', bbox=props)
 
     
-def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
+def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs, algorithm, print_to_file, output_file):
     """Method to find uncertainty for the autocorrelation function and Lomb-Scargle Periodogram. 
     Starting from the peak, we move 1 noise level down to the left and right of the peak.
     How far the value moves along the x-axis after this noise "adjustment" corresponds to the uncertainty.
@@ -156,13 +165,15 @@ def find_uncertainty(frequency, power, tot_time, noise, period_idx, coeffs):
     else:
         f_max = new_peak + np.argmax(upper_pow < power[period_idx] - noise)
 
-
     min_period = 1/new_freq[f_max]
     max_period = 1/new_freq[f_min]
     upp_err = max_period - 1/max_freq
     low_err = (1/max_freq) - min_period
     ls_upp_err = np.fmax(1/tot_time, upp_err)
     ls_low_err = np.fmax(1/tot_time, low_err)
+
+    if print_to_file:
+        output_file.write('{} Period: {:.5f}, {} Error: + {:.5f}, - {:.5f}, '.format(algorithm, max(1/max_freq, max_freq), algorithm, ls_upp_err, ls_low_err))
 
     # Use max to differentiate between autocorrelation lag value, or lombscargle freqency value.
     plt_text = 'Period = {:.5f}\nUncertainty\n+ {:.5f}\n- {:.5f}'.format(max(1/max_freq, max_freq), ls_upp_err, ls_low_err)
@@ -292,7 +303,7 @@ def find_gps_uncertainty(frequency, power, tot_time, noise, max_freq, coeffs):
     return plt_text
 
 
-def plotAutoCorrelation(time, flux, plot_count):
+def plotAutoCorrelation(time, flux, plot_count, print_to_file, input_file, output_file):
     """Using autocorrelation function from MatPlotLib to find period.
 
     Args:
@@ -338,13 +349,12 @@ def plotAutoCorrelation(time, flux, plot_count):
     # Noise level of acf plot.
     acf_noise = np.std(np.diff(acf))
 
-
     total_time = np.max(time) - np.min(time)
     # Values used when creating interpolated values in uncertainty function. 
     interp_coeff = [0.65, 1.30]
     peak_index = period[0][0]
     # Call uncertainty function
-    plt_text = find_uncertainty(lags , acf, total_time, acf_noise, peak_index, interp_coeff)
+    plt_text = find_uncertainty(lags , acf, total_time, acf_noise, peak_index, interp_coeff, 'AC', print_to_file, output_file)
 
     # Hold max and min values for plot window
     max_x = np.max(lags)
@@ -355,17 +365,22 @@ def plotAutoCorrelation(time, flux, plot_count):
     plt.xlim(min_x * 1.25, max_x * 1.25)
     plt.ylim(min_y * 1.25, max_y * 1.25)
 
-    # Temporary box coordinates, will have to be changed***
-    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-    plt.figure(plot_count)
-    plt.plot(lags, acf)
-    plt.xlabel("Lags")
-    plt.ylabel("ACF")
-    plt.title("AutoCorrelation")
-    plt.text(max_x * .90, max_per * 1.1, plt_text, verticalalignment='top', bbox=props)
-    
+    # If multiple files, print to file
+    if print_to_file:
+        output_file.write("Target: %s\n" % (input_file))
+    # Else plot figure
+    else:
+        # Temporary box coordinates, will have to be changed***
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        plt.figure(plot_count)
+        plt.plot(lags, acf)
+        plt.xlabel("Lags")
+        plt.ylabel("ACF")
+        plt.title("AutoCorrelation")
+        plt.text(max_x * .90, max_per * 1.1, plt_text, verticalalignment='top', bbox=props)
 
-def plotWavelets(time, flux, plot_count):
+
+def plotWavelets(time, flux, plot_count, print_to_file, input_file, output_file):
     """Using morlet wavelet from scaleogram package to determine period. 
         Values are plotted on a 2-D contour map, and then transformed into
         a 1-D plot.
@@ -405,7 +420,7 @@ def plotWavelets(time, flux, plot_count):
     plt.ylabel("Sum per Period")
     plt.title("Wavelet Transformation - 1-D")
 
-def plotPaulWavelet(time, flux, plot_count):
+def plotPaulWavelet(time, flux, plot_count, print_to_file, input_file, output_file):
     """Using Aaron O'Leary's wavelet package to compute the paul wavelet.
        Paul wavelet is used in computing the Gradient of the Power Spectrum.
 
@@ -436,7 +451,7 @@ def plotPaulWavelet(time, flux, plot_count):
     ax.set_yscale('log')
     plt.show()
 
-def plotGPS(time, frequency, period, power_sum, plot_count):
+def plotGPS(time, frequency, period, power_sum, plot_count, input_file, output_file):
     """ Using the Paul wavelet to find the Gradient of the Power Spectrum.
         Current problem: given our calculation of period using the alpha value, 
         the period we find is not the peak of the graph. The period is printed to
@@ -495,7 +510,7 @@ def plotGPS(time, frequency, period, power_sum, plot_count):
     # print(aa)
     
     
-def plotFasterWavelets(time, flux, plot_count):
+def plotFasterWavelets(time, flux, plot_count, print_to_file, input_file, output_file):
     """Using Aaron O'Leary's wavelet package to compute the Morlet wavelet.
 
     Args:
@@ -546,16 +561,21 @@ def plotFasterWavelets(time, flux, plot_count):
     # power = power.flatten()
 
     # Finds lower and upper uncertainties. Values are saved and placed on the plot.
-    plt_text = find_uncertainty(scales, power_sum, tot_time, noise, holder, interp_coeff)
-    plt.text(5,5,plt_text, bbox=box)
+    plt_text = find_uncertainty(scales, power_sum, tot_time, noise, holder, interp_coeff, 'FW', print_to_file, output_file)
 
-    # Plotting wavelet results on 2D map.
-    fig, ax = plt.subplots()
-    T, S = np.meshgrid(t, scales)
+    # If multiple files, print to file
+    if print_to_file:
+        output_file.write("Target: %s\n" % (input_file))
+    else:
+        plt.text(5,5,plt_text, bbox=box)
 
-    ax.contourf(T, S, power, 100)
-    # ax.set_yscale('log')
-    plt.xlabel('Time')
-    plt.ylabel('Frequency')
-    plt.title('Faster Wavelets')
+        # Plotting wavelet results on 2D map.
+        fig, ax = plt.subplots()
+        T, S = np.meshgrid(t, scales)
+
+        ax.contourf(T, S, power, 100)
+        # ax.set_yscale('log')
+        plt.xlabel('Time')
+        plt.ylabel('Frequency')
+        plt.title('Faster Wavelets')
     
