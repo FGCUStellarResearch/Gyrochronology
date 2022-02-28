@@ -131,12 +131,15 @@ def data_op(file_num=None, algorithms = []):
             time = [float(data) for data in time]
             detrended_flux = [float(data) for data in detrended_flux]
             noise = [float(data) for data in background]
+
+            # open output file in write mode, wiping previous data
+            outputFile = open('output.txt', 'w')
             
             # Loop through algorithms and execute each on data
             for algorithm in algorithms:
                 plot_count = plot_count + 1
                 alg_choice = alg_dict[algorithm]
-                alg.selection(time, detrended_flux, alg_choice, plot_count, len(algorithm), multiple_files_selected, inputFile)
+                alg.selection(time, detrended_flux, alg_choice, plot_count, len(algorithm), multiple_files_selected, inputFile, outputFile)
         # If multiple files are selected
         else:  
             print("Multiple files selected")
